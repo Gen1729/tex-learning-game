@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect} from 'react';
+import { useRef, useEffect, useState } from 'react';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { convertLatexToMathMl } from 'mathlive';
@@ -23,6 +23,8 @@ export default function TeXGame() {
   const [feedback, setFeedback] = useState<string>(''); // 正解・不正解のメッセージ
   const [isCorrect, setIsCorrect] = useState<boolean>(false); // クリア状態
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const currentProblem = PROBLEMS[problemId];
 
   // 文字列正規化ロジック（スペースを削除して判定を緩くする）
@@ -30,6 +32,7 @@ export default function TeXGame() {
 
   // 入力チェック関数
   const checkAnswer = (userInput:string) => {
+    if(isCorrect)return;
     let copyUserInput:string = userInput;
     if(copyUserInput.length > MAXTEXTSIZE){
       copyUserInput = copyUserInput.substring(0,MAXTEXTSIZE);
@@ -41,7 +44,6 @@ export default function TeXGame() {
     // 入力が空の場合は何もしない
     if (userInput.trim() === '') {
       setFeedback('');
-      setIsCorrect(false);
       return;
     }
 
@@ -60,7 +62,6 @@ export default function TeXGame() {
       setIsCorrect(true);
     } else {
       setFeedback('');
-      setIsCorrect(false);
     }
   };
 
@@ -80,7 +81,7 @@ export default function TeXGame() {
 
   // KaTeXを使ってHTML文字列を生成するヘルパー関数
   const renderMath = (tex:string) => {
-    if(tex.length >= MAXTEXTSIZE)return { __html: '<span style="color:red">文字数が多すぎます</span>' };
+    if(tex.length >= MAXTEXTSIZE)return { __html: '<span style="color:red">Too many characters</span>' };
 
     try {
       const html = katex.renderToString(tex, { 
@@ -94,9 +95,16 @@ export default function TeXGame() {
 
       return { __html: html, hasError: false };
     } catch (e) {
-      return { __html: '<span style="color:red">Syntax Error</span>' };
+      console.error('KaTeX render error:', e);
+      return { __html: '<span style="color:red">Syntax Error</span>', hasError: true };
     }
   };
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [problemId]);
 
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
@@ -130,6 +138,8 @@ export default function TeXGame() {
               type="text"
               value={input}
               onChange={(e) => checkAnswer(e.target.value)}
+              ref={inputRef}
+              disabled={isCorrect}
               style={{
                 width: '100%',
                 padding: '15px',
@@ -144,11 +154,11 @@ export default function TeXGame() {
           </div>
 
           {/* リアルタイムプレビュー & フィードバック */}
-          <div style={{ minHeight: '80px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ background: '#f9f9f9', padding: '30px', borderRadius: '10px',minHeight: '80px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <div style={{ fontSize: '14px', color: '#888' }}>Preivew (あなたの入力):</div>
+              <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px'}}>Your Preview:</div>
               <div
-                style={{ fontSize: '1.5em', minHeight: '40px' }}
+                style={{ fontSize: '2.5em', minHeight: '40px' }}
                 dangerouslySetInnerHTML={renderMath(input)}
               />
             </div>
@@ -169,7 +179,7 @@ export default function TeXGame() {
                   animation: 'pop 0.3s ease'
                 }}
               >
-                Next Problem &rarr;
+                Next(Enter) &rarr;
               </button>
             )}
           </div>
