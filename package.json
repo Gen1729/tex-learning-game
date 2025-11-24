@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "dompurify": "^3.3.0",
+    "katex": "^0.16.25",
+    "mathlive": "^0.108.2",
     "next": "16.0.3",
     "react": "19.2.0",
     "react-dom": "19.2.0"

@@ -1,65 +1,183 @@
-import Image from "next/image";
+"use client"
+import { useState, useEffect} from 'react';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+import { convertLatexToMathMl } from 'mathlive';
+import DOMPurify from 'dompurify';
 
-export default function Home() {
+// 問題データ（将来はDBから取得したり、ランダム生成したりします）
+const PROBLEMS = [
+  { id: 1, answer: 'x^2', description: 'xの2乗' },
+  { id: 2, answer: '\\frac{1}{2}', description: '2分の1（分数）' },
+  { id: 3, answer: '\\sqrt{x}', description: 'xのルート（平方根）' },
+  { id: 4, answer: '\\sum_{i=1}^{n} i', description: 'i=1からnまでの総和' },
+];
+
+const MAXTEXTSIZE:number = 50;
+
+export default function TeXGame() {
+  // ゲームの状態管理
+  const [problemId, setProblemId] = useState<number>(0); // 現在の問題番号
+  const [input, setInput] = useState<string>(''); // ユーザーの入力
+  const [score, setScore] = useState<number>(0); // スコア
+  const [feedback, setFeedback] = useState<string>(''); // 正解・不正解のメッセージ
+  const [isCorrect, setIsCorrect] = useState<boolean>(false); // クリア状態
+
+  const currentProblem = PROBLEMS[problemId];
+
+  // 文字列正規化ロジック（スペースを削除して判定を緩くする）
+  const normalize = (str:string) => str.replace(/\s/g, '');
+
+  // 入力チェック関数
+  const checkAnswer = (userInput:string) => {
+    let copyUserInput:string = userInput;
+    if(copyUserInput.length > MAXTEXTSIZE){
+      copyUserInput = copyUserInput.substring(0,MAXTEXTSIZE);
+    }
+    setInput(copyUserInput);
+    
+    if (!currentProblem) return;
+
+    // 入力が空の場合は何もしない
+    if (userInput.trim() === '') {
+      setFeedback('');
+      setIsCorrect(false);
+      return;
+    }
+
+    const previewResult = renderMath(userInput);
+    if (previewResult.hasError) {
+      setFeedback('');
+      return;
+    }
+
+    const userMathML = convertLatexToMathMl(normalize(userInput));
+    const correctMathML = convertLatexToMathMl(normalize(currentProblem.answer));
+
+    // 判定ロジック
+    if (userMathML === correctMathML) {
+      setFeedback('Correct! 🎉');
+      setIsCorrect(true);
+    } else {
+      setFeedback('');
+      setIsCorrect(false);
+    }
+  };
+
+  // 次の問題へ進む
+  const handleNext = () => {
+    if (problemId < PROBLEMS.length - 1) {
+      setProblemId(problemId + 1);
+      setInput('');
+      setFeedback('');
+      setIsCorrect(false);
+      setScore(score + 100);
+    } else {
+      setFeedback('Game Clear! 全問正解です！ 🏆');
+      setIsCorrect(false); // ボタンを無効化して終了
+    }
+  };
+
+  // KaTeXを使ってHTML文字列を生成するヘルパー関数
+  const renderMath = (tex:string) => {
+    if(tex.length >= MAXTEXTSIZE)return { __html: '<span style="color:red">文字数が多すぎます</span>' };
+
+    try {
+      const html = katex.renderToString(tex, { 
+        throwOnError: false
+      });
+
+      if (html.includes('katex-error')) {
+        const sanitizedHTML = DOMPurify.sanitize('<span style="color:red">'+tex+'</span>');
+        return { __html: sanitizedHTML, hasError: true };
+      }
+
+      return { __html: html, hasError: false };
+    } catch (e) {
+      return { __html: '<span style="color:red">Syntax Error</span>' };
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
+      {/* ヘッダー部分 */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
+        <h1 style={{ margin: 0, fontSize: '24px' }}>TeX Racer 🏁</h1>
+        <div style={{ fontWeight: 'bold', fontSize: '20px' }}>Score: {score}</div>
+      </div>
+
+      {/* ゲームクリア時の表示 */}
+      {problemId >= PROBLEMS.length - 1 && feedback.includes('Game Clear') ? (
+        <div style={{ textAlign: 'center', padding: '50px 0' }}>
+          <h2>{feedback}</h2>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+      ) : (
+        <>
+          {/* 問題表示エリア */}
+          <div style={{ background: '#f9f9f9', padding: '30px', borderRadius: '10px', textAlign: 'center', marginBottom: '20px' }}>
+            <p style={{ color: '#666', marginBottom: '10px' }}>Question {problemId + 1}: {currentProblem.description}</p>
+            {/* ここにターゲットとなる数式を表示 */}
+            <div 
+              style={{ fontSize: '2.5em' }}
+              dangerouslySetInnerHTML={renderMath(currentProblem.answer)} 
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+          </div>
+
+          {/* 入力エリア */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>TeXコードを入力:</label>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => checkAnswer(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '15px',
+                fontSize: '18px',
+                borderRadius: '5px',
+                border: isCorrect ? '2px solid #4caf50' : '2px solid #ccc', // 正解すると枠が緑になる
+                outline: 'none',
+                fontFamily: 'monospace'
+              }}
+              autoFocus
+            />
+          </div>
+
+          {/* リアルタイムプレビュー & フィードバック */}
+          <div style={{ minHeight: '80px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '14px', color: '#888' }}>Preivew (あなたの入力):</div>
+              <div
+                style={{ fontSize: '1.5em', minHeight: '40px' }}
+                dangerouslySetInnerHTML={renderMath(input)}
+              />
+            </div>
+            
+            {/* 正解時のみ「次へ」ボタンを表示 */}
+            {isCorrect && (
+              <button
+                onClick={handleNext}
+                style={{
+                  background: '#4caf50',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 20px',
+                  fontSize: '16px',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  animation: 'pop 0.3s ease'
+                }}
+              >
+                Next Problem &rarr;
+              </button>
+            )}
+          </div>
+          
+          {/* メッセージ表示 */}
+          {feedback && <div style={{ color: isCorrect ? '#2e7d32' : '#d32f2f', fontWeight: 'bold', marginTop: '10px' }}>{feedback}</div>}
+        </>
+      )}
     </div>
   );
 }
