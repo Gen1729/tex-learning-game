@@ -162,30 +162,35 @@ export default function TeXGame() {
                 dangerouslySetInnerHTML={renderMath(input)}
               />
             </div>
-            
-            {/* 正解時のみ「次へ」ボタンを表示 */}
-            {isCorrect && (
-              <button
-                onClick={handleNext}
-                style={{
-                  background: '#4caf50',
-                  color: 'white',
-                  border: 'none',
-                  padding: '10px 20px',
-                  fontSize: '16px',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  animation: 'pop 0.3s ease'
-                }}
-              >
-                Next(Enter) &rarr;
-              </button>
-            )}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+            {/* メッセージ表示（左寄せ） */}
+            <div>
+              {feedback && <div style={{ color: isCorrect ? '#2e7d32' : '#d32f2f', fontWeight: 'bold' }}>{feedback}</div>}
+            </div>
+            {/* 正解時のみ「次へ」ボタンを表示（右寄せ） */}
+            <div>
+              {isCorrect && (
+                <button
+                  onClick={handleNext}
+                  style={{
+                    background: '#4caf50',
+                    color: 'white',
+                    border: 'none',
+                    padding: '10px 20px',
+                    fontSize: '16px',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    animation: 'pop 0.3s ease'
+                  }}
+                >
+                  Next(Enter) &rarr;
+                </button>
+              )}
+            </div>
           </div>
           
-          {/* メッセージ表示 */}
-          {feedback && <div style={{ color: isCorrect ? '#2e7d32' : '#d32f2f', fontWeight: 'bold', marginTop: '10px' }}>{feedback}</div>}
         </>
       )}
     </div>
