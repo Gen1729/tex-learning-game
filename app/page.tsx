@@ -11,6 +11,7 @@ const PROBLEMS = [
   { id: 2, answer: '\\frac{1}{2}', description: '2分の1（分数）' },
   { id: 3, answer: '\\sqrt{x}', description: 'xのルート（平方根）' },
   { id: 4, answer: '\\sum_{i=1}^{n} i', description: 'i=1からnまでの総和' },
+  { id: 5, answer: '\\prod_{i=1}^{n} i', description: 'i=1からnまでの総積' },
 ];
 
 const MAXTEXTSIZE:number = 50;
