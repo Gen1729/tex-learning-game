@@ -1,5 +1,5 @@
 "use client"
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { convertLatexToMathMl } from 'mathlive';
@@ -67,7 +67,7 @@ export default function TeXGame() {
   };
 
   // 次の問題へ進む
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (problemId < PROBLEMS.length - 1) {
       setProblemId(problemId + 1);
       setInput('');
@@ -78,7 +78,18 @@ export default function TeXGame() {
       setFeedback('Game Clear! 全問正解です！ 🏆');
       setIsCorrect(false); // ボタンを無効化して終了
     }
-  };
+  }, [problemId, score]);
+
+  // 正解時に自動で次の問題へ遷移
+  useEffect(() => {
+    if (isCorrect) {
+      const timer = setTimeout(() => {
+        handleNext();
+      }, 600);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isCorrect, handleNext]);
 
   // KaTeXを使ってHTML文字列を生成するヘルパー関数
   const renderMath = (tex:string) => {
@@ -108,10 +119,44 @@ export default function TeXGame() {
   }, [problemId]);
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
+    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif', position: 'relative' }}>
+      {/* 正解時の大きな丸のオーバーレイ */}
+      {isCorrect && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            animation: 'fadeIn 0.2s ease, fadeOut 0.2s ease 0.6s forwards'
+          }}
+        >
+          <div
+            style={{
+              width: '200px',
+              height: '200px',
+              borderRadius: '50%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              fontSize: '200px',
+              color: 'white',
+              animation: 'fadeIn 0.2s ease, fadeOut 0.2s ease 0.6s forwards',
+            }}
+          >
+            ⭕
+          </div>
+        </div>
+      )}
+
       {/* ヘッダー部分 */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
-        <h1 style={{ margin: 0, fontSize: '24px' }}>TeX Racer 🏁</h1>
+        <h1 style={{ margin: 0, fontSize: '24px' }}>TeX RPG</h1>
         <div style={{ fontWeight: 'bold', fontSize: '20px' }}>Score: {score}</div>
       </div>
 
@@ -164,31 +209,10 @@ export default function TeXGame() {
               />
             </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginTop: '10px' }}>
             {/* メッセージ表示（左寄せ） */}
             <div>
               {feedback && <div style={{ color: isCorrect ? '#2e7d32' : '#d32f2f', fontWeight: 'bold' }}>{feedback}</div>}
-            </div>
-            {/* 正解時のみ「次へ」ボタンを表示（右寄せ） */}
-            <div>
-              {isCorrect && (
-                <button
-                  onClick={handleNext}
-                  style={{
-                    background: '#4caf50',
-                    color: 'white',
-                    border: 'none',
-                    padding: '10px 20px',
-                    fontSize: '16px',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    animation: 'pop 0.3s ease'
-                  }}
-                >
-                  Next(Enter) &rarr;
-                </button>
-              )}
             </div>
           </div>
           
