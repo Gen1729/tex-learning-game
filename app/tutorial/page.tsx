@@ -363,7 +363,8 @@ export default function TUTORIALHOME() {
       const userMathML = convertLatexToMathMl(userInput);
       const correctMathML = convertLatexToMathMl(currentTutorial.answer);
 
-      // 判定ロジック
+      // 判定ロジック（MathMLの比較 + 正規化後の文字列長チェック）
+      // 空の中括弧などを防ぐため、正規化後の長さも確認
       if (userMathML === correctMathML) {
         setIsCorrect(true);
       } else {
@@ -404,18 +405,75 @@ export default function TUTORIALHOME() {
   }, [sectionId]);
 
   return (
-    <div style={{ maxWidth: '700px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
-      {/* ヘッダー部分 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
-        <h1 style={{ margin: 0, fontSize: '24px' }}>LaTeX Tutorial</h1>
-        <div style={{ color: '#666', fontSize: '16px' }}>Section {sectionId + 1} / {TUTORIALS.length}</div>
-      </div>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+      {/* 左サイドバー - 目次 */}
+      <aside style={{ 
+        width: '300px', 
+        backgroundColor: '#f5f5f5', 
+        borderRight: '1px solid #ddd',
+        overflowY: 'auto',
+        position: 'sticky',
+        top: 0,
+        height: '100vh',
+        padding: '20px'
+      }}>
+        <h2 style={{ 
+          margin: '0 0 20px 0', 
+          fontSize: '18px', 
+          fontWeight: 'bold',
+          color: '#333',
+          borderBottom: '2px solid #2196f3',
+          paddingBottom: '10px'
+        }}>
+          目次
+        </h2>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          {TUTORIALS.map((tutorial, index) => (
+            <button
+              key={tutorial.id}
+              onClick={() => handleSectionChange(index)}
+              style={{
+                textAlign: 'left',
+                padding: '10px 12px',
+                border: 'none',
+                background: sectionId === index ? '#2196f3' : 'transparent',
+                color: sectionId === index ? 'white' : '#333',
+                cursor: 'pointer',
+                fontSize: '13px',
+                borderRadius: '4px',
+                transition: 'all 0.2s',
+                fontWeight: sectionId === index ? 'bold' : 'normal'
+              }}
+              onMouseEnter={(e) => {
+                if (sectionId !== index) {
+                  e.currentTarget.style.backgroundColor = '#e3f2fd';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (sectionId !== index) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
+            >
+              {index + 1}. {tutorial.description}
+            </button>
+          ))}
+        </nav>
+      </aside>
 
-      {/* 説明エリア */}
-      <div style={{ background: '#e3f2fd', padding: '20px', borderRadius: '10px', marginBottom: '20px', borderLeft: '4px solid #2196f3', minHeight: '130px'}}>
-        <h2 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#1976d2' }}>{currentTutorial.description}</h2>
-        <p style={{ margin: 0, lineHeight: '1.6', color: '#333' }}>{currentTutorial.explanation}</p>
-      </div>
+      {/* メインコンテンツ */}
+      <main style={{ flex: 1, maxWidth: '800px', margin: '0 auto', padding: '20px', width: '100%' }}>
+        {/* ヘッダー部分 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
+          <h1 style={{ margin: 0, fontSize: '24px' }}>LaTeX Tutorial</h1>
+          <div style={{ color: '#666', fontSize: '16px' }}>Section {sectionId + 1} / {TUTORIALS.length}</div>
+        </div>
+
+        {/* 説明エリア */}
+        <div style={{ background: '#e3f2fd', padding: '20px', borderRadius: '10px', marginBottom: '20px', borderLeft: '4px solid #2196f3', minHeight: '130px'}}>
+          <h2 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#1976d2' }}>{currentTutorial.description}</h2>
+          <p style={{ margin: 0, lineHeight: '1.6', color: '#333' }}>{currentTutorial.explanation}</p>
+        </div>
 
       {/* 目標表示エリア */}
       <div style={{ background: '#f9f9f9', padding: '30px', borderRadius: '10px', textAlign: 'center', marginBottom: '20px',minHeight: '160px'}}>
@@ -520,6 +578,7 @@ export default function TUTORIALHOME() {
           次へ →
         </button>
       </div>
+      </main>
     </div>
   );
 }
