@@ -243,9 +243,9 @@ const TUTORIALS = [
   },
   { 
     id: 40, 
-    answer: '\\overrightarrow{AB}', 
+    answer: '\\overrightarrow{OA}', 
     description: '長いベクトル',
-    explanation: '2文字以上に矢印をかけたい場合は \\overrightarrow{AB} を使います。'
+    explanation: '2文字以上に矢印をかけたい場合は \\overrightarrow{} を使います。'
   },
   { 
     id: 41, 
