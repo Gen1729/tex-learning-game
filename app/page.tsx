@@ -98,32 +98,42 @@ export default function Home() {
             </div>
           </Link>
 
-          {/* クイズ（準備中） */}
-          <div style={{
-            border: '1px solid #999',
-            padding: '25px 30px',
-            backgroundColor: '#f9f9f9',
-            opacity: 0.6,
-            cursor: 'not-allowed'
-          }}>
-            <h3 style={{ 
-              fontSize: '20px', 
-              fontWeight: 'normal',
-              margin: '0 0 10px 0',
-              color: '#666'
-            }}>
-              2. Quiz <span style={{ fontSize: '14px' }}>(Coming Soon)</span>
-            </h3>
-            <p style={{ 
-              fontSize: '15px', 
-              color: '#777',
-              margin: 0,
-              lineHeight: '1.5'
-            }}>
-              ランダムに出題される問題に挑戦して、知識を定着させましょう。
-              正答率や苦手分野の分析機能も予定しています。
-            </p>
-          </div>
+          {/* クイズ*/}
+          <Link 
+            href="/quiz" 
+            style={{ 
+              textDecoration: 'none',
+              color: 'inherit'
+            }}
+          >
+            <div style={{
+              border: '1px solid #333',
+              padding: '25px 30px',
+              transition: 'background-color 0.2s',
+              cursor: 'pointer',
+              backgroundColor: '#fff'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+            >
+              <h3 style={{ 
+                fontSize: '20px', 
+                fontWeight: 'normal',
+                margin: '0 0 10px 0'
+              }}>
+                2. Quiz
+              </h3>
+              <p style={{ 
+                fontSize: '15px', 
+                color: '#555',
+                margin: 0,
+                lineHeight: '1.5'
+              }}>
+                ランダムに出題される問題に挑戦して、知識を定着させましょう。
+                難易度の選択や正答率の表示も行います。
+              </p>
+            </div>
+          </Link>
 
           {/* タイムアタック（準備中） */}
           <div style={{

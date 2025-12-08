@@ -1,5 +1,5 @@
 "use client"
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { convertLatexToMathMl } from 'mathlive';
@@ -39,6 +39,7 @@ export default function QUIZPAGE() {
   const [prevAnser, setPrevAnswer] = useState<string>('');
   const [isCorrect, setIsCorrect] = useState<boolean>(false); // 正解状態
   const [isShaking, setIsShaking] = useState<boolean>(false); // 震えるアニメーション用
+  const [showCircle, setShowCircle] = useState<boolean>(false); // 正解時の丸表示用
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -49,7 +50,14 @@ export default function QUIZPAGE() {
     setIsShaking(true);
   };
 
-  // isShakingがtrueになったら2秒後にfalseに戻す
+  const handleProblem = useCallback(() => {
+    setProblemId(problemId + 1);
+    setPrevAnswer("");
+    setInput("");
+    setIsCorrect(false);
+  }, [problemId]);
+
+  // isShakingがtrueになったら0.5秒後にfalseに戻す
   useEffect(() => {
     if (isShaking) {
       const timer = setTimeout(() => {
@@ -59,6 +67,23 @@ export default function QUIZPAGE() {
       return () => clearTimeout(timer);
     }
   }, [isShaking]);
+
+  // showCircleがtrueになったら1秒後にfalseに戻し、次の問題へ遷移
+  useEffect(() => {
+    if (showCircle) {
+      const timer = setTimeout(() => {
+        setShowCircle(false);
+        // 円の表示が終わったら次の問題に遷移
+        if (problemId < Problems.length - 1) {
+          handleProblem();
+        }
+      }, 1000); // 1秒間表示
+
+      return () => clearTimeout(timer);
+    }
+  }, [showCircle, problemId, handleProblem]);
+
+  
 
   const handleInput = (userInput:string) => {
     let copyUserInput:string = userInput;
@@ -103,11 +128,7 @@ export default function QUIZPAGE() {
       if (userMathML === correctMathML) {
         setIsCorrect(true);
         setPrevAnswer(input);
-
-        setProblemId(problemId + 1);
-        setPrevAnswer("");
-        setInput("");
-        setIsCorrect(false);
+        setShowCircle(true); // 正解の丸を表示
       } else {
         setIsCorrect(false);
         setPrevAnswer(input);
@@ -156,7 +177,45 @@ export default function QUIZPAGE() {
   }, [problemId]);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', position: 'relative' }}>
+      {/* 正解時の赤い丸のオーバーレイ */}
+      {showCircle && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            zIndex: 1000,
+            animation: 'fadeIn 0.2s ease, fadeOut 0.2s ease 0.8s forwards'
+          }}
+        >
+          <div
+            style={{
+              width: '200px',
+              height: '200px',
+              borderRadius: '50%',
+              backgroundColor: '#d39595ff',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              fontSize: '100px',
+              color: 'white',
+              animation: 'fadeIn 0.2s ease, fadeOut 0.2s ease 0.8s forwards',
+              boxShadow: '0 10px 40px rgba(255, 51, 51, 0.6)',
+              border: '5px solid white'
+            }}
+          >
+            ⭕
+          </div>
+        </div>
+      )}
+
       {/* メインコンテンツ */}
       <main style={{ flex: 1, maxWidth: '800px', margin: '0 auto', padding: '20px', width: '100%' }}>
         {/* ヘッダー部分 */}
