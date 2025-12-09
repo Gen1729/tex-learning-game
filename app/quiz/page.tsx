@@ -1,10 +1,10 @@
 "use client"
 import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { convertLatexToMathMl } from 'mathlive';
 import DOMPurify from 'dompurify';
-import { asyncWrapProviders } from 'async_hooks';
 
 type Problem = {
   level: number;
@@ -14,6 +14,11 @@ type Problem = {
 
 //問題データ　後にデータベース作成する
 const Problems:Problem[] = [
+  {
+    level: 4, 
+    answer: '\\overrightarrow{OA}', 
+    keyword: ["OA"]
+  },
   {
     level: 1, 
     answer: 'Answer = 2x + 5y - 10z',
@@ -32,14 +37,20 @@ const Problems:Problem[] = [
 ];
 
 const MAXTEXTSIZE:number = 70;
+const TIME_LIMIT:number = 10; // 制限時間（秒）
 
 export default function QUIZPAGE() {
+  const router = useRouter();
   const [problemId, setProblemId] = useState<number>(0); // 現在のセクション番号
   const [input, setInput] = useState<string>(''); // ユーザーの入力
   const [prevAnser, setPrevAnswer] = useState<string>('');
   const [isCorrect, setIsCorrect] = useState<boolean>(false); // 正解状態
   const [isShaking, setIsShaking] = useState<boolean>(false); // 震えるアニメーション用
   const [showCircle, setShowCircle] = useState<boolean>(false); // 正解時の丸表示用
+  const [showTimeUp, setShowTimeUp] = useState<boolean>(false); // 時間切れ表示用
+  const [timeLeft, setTimeLeft] = useState<number>(TIME_LIMIT); // 残り時間
+  const [correctCount, setCorrectCount] = useState<number>(0); // 正解数
+  const [wrongCount, setWrongCount] = useState<number>(0); // 不正解数
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -55,7 +66,47 @@ export default function QUIZPAGE() {
     setPrevAnswer("");
     setInput("");
     setIsCorrect(false);
+    setTimeLeft(TIME_LIMIT); // タイマーをリセット
   }, [problemId]);
+
+  // タイマーのカウントダウン
+  useEffect(() => {
+    if (timeLeft <= 0 || isCorrect || showCircle || showTimeUp) {
+      return; // 時間切れ、正解済み、または円表示中は停止
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 0.1) {
+          return 0;
+        }
+        return prev - 0.1; // 0.1秒ごとに減少
+      });
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, [timeLeft, isCorrect, showCircle, showTimeUp]);
+
+  // 時間切れの処理
+  useEffect(() => {
+    if (timeLeft <= 0 && !isCorrect && !showCircle && !showTimeUp) {
+      const timer = setTimeout(() => {
+        setShowTimeUp(true);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [timeLeft, isCorrect, showCircle, showTimeUp]);
+
+  // showTimeUpがtrueになったら1秒後にfalseに戻し、次の問題へ遷移
+  useEffect(() => {
+    if (showTimeUp) {
+      const timer = setTimeout(() => {
+        router.push(`/quiz/result?correct=${correctCount}&wrong=${wrongCount}`);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [showTimeUp, problemId, handleProblem, router, correctCount, wrongCount]);
 
   // isShakingがtrueになったら0.5秒後にfalseに戻す
   useEffect(() => {
@@ -76,12 +127,15 @@ export default function QUIZPAGE() {
         // 円の表示が終わったら次の問題に遷移
         if (problemId < Problems.length - 1) {
           handleProblem();
+        } else {
+          // 最終問題の場合は結果ページへ
+          router.push(`/quiz/result?correct=${correctCount}&wrong=${wrongCount}`);
         }
       }, 1000); // 1秒間表示
 
       return () => clearTimeout(timer);
     }
-  }, [showCircle, problemId, handleProblem]);
+  }, [showCircle, problemId, handleProblem, router, correctCount, wrongCount]);
 
   
 
@@ -103,6 +157,8 @@ export default function QUIZPAGE() {
     
     if (!currentProblem) return;
 
+    if(timeLeft <= 0) return;
+
     // 入力が空の場合は何もしない
     if (userInput.trim() === '') {
       setIsCorrect(false);
@@ -114,6 +170,7 @@ export default function QUIZPAGE() {
     if (previewResult.hasError) {
       setIsCorrect(false);
       setPrevAnswer(input);
+      setWrongCount(wrongCount + 1); // 不正解カウント増加
       triggerShake();
       return;
     }
@@ -126,12 +183,23 @@ export default function QUIZPAGE() {
       // 判定ロジック（MathMLの比較 + 正規化後の文字列長チェック）
       // 空の中括弧などを防ぐため、正規化後の長さも確認
       if (userMathML === correctMathML) {
+        for (const k of currentProblem.keyword){
+          if (!userInput.includes(k)){
+            setIsCorrect(false);
+            setPrevAnswer(input);
+            setWrongCount(wrongCount + 1); // 不正解カウント増加
+            triggerShake();
+            return;
+          }
+        }
         setIsCorrect(true);
         setPrevAnswer(input);
+        setCorrectCount(correctCount + 1); // 正解カウント増加
         setShowCircle(true); // 正解の丸を表示
       } else {
         setIsCorrect(false);
         setPrevAnswer(input);
+        setWrongCount(wrongCount + 1); // 不正解カウント増加
         triggerShake();
       }
     } catch (error) {
@@ -139,6 +207,7 @@ export default function QUIZPAGE() {
       console.error('MathML conversion error:', error);
       setIsCorrect(false);
       setPrevAnswer(input);
+      setWrongCount(wrongCount + 1); // 不正解カウント増加
       triggerShake();
     }
   };
@@ -216,6 +285,44 @@ export default function QUIZPAGE() {
         </div>
       )}
 
+      {/* 時間切れ時のオーバーレイ */}
+      {showTimeUp && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            zIndex: 1000,
+            animation: 'fadeIn 0.2s ease, fadeOut 0.2s ease 0.8s forwards'
+          }}
+        >
+          <div
+            style={{
+              padding: '40px 60px',
+              borderRadius: '20px',
+              backgroundColor: '#f44336',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              fontSize: '48px',
+              fontWeight: 'bold',
+              color: 'white',
+              animation: 'fadeIn 0.2s ease, fadeOut 0.2s ease 0.8s forwards',
+              boxShadow: '0 10px 40px rgba(244, 67, 54, 0.6)',
+              border: '5px solid white'
+            }}
+          >
+            TIME UP
+          </div>
+        </div>
+      )}
+
       {/* メインコンテンツ */}
       <main style={{ flex: 1, maxWidth: '800px', margin: '0 auto', padding: '20px', width: '100%' }}>
         {/* ヘッダー部分 */}
@@ -224,42 +331,58 @@ export default function QUIZPAGE() {
             <h1 style={{ margin: 0, fontSize: '24px' }}>LaTeX QUIZ</h1>
             <div style={{ color: '#666', fontSize: '16px' }}>Problem {problemId + 1} / {Problems.length}</div>
           </div>
-          
-          {/* 問題インジケーター */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            {Problems.map((problem, index) => {
-              // レベルに応じた色を決定
-              const getColorByLevel = (level: number, isCurrent: boolean) => {
-                const colors: Record<number, { light: string; dark: string }> = {
-                  1: { light: '#a5d6a7', dark: '#4caf50' }, // 緑（易しい）
-                  2: { light: '#90caf9', dark: '#2196f3' }, // 青（普通）
-                  3: { light: '#ffcc80', dark: '#ff9800' }, // オレンジ（難しい）
-                };
-                const colorSet = colors[level] || colors[1];
-                return isCurrent ? colorSet.dark : colorSet.light;
-              };
 
-              const isCurrent = index === problemId;
-              const backgroundColor = getColorByLevel(problem.level, isCurrent);
-
-              return (
-                <div
-                  key={index}
-                  style={{
-                    width: '20px',
-                    height:'20px',
-                    backgroundColor,
-                    border: isCurrent ? '1px solid #333' : '1px solid #999',
-                    borderRadius: '3px',
-                    transition: 'all 0.3s ease',
-                    opacity: isCurrent ? 1 : 0.6,
-                    boxShadow: isCurrent ? '0 2px 4px rgba(0,0,0,0.2)' : 'none'
-                  }}
-                  title={`Problem ${index + 1} (Level ${problem.level})`}
-                />
-              );
-            })}
+          {/* タイムリミットのプログレスバー */}
+          <div style={{ width: '100%', height: '8px', backgroundColor: '#e0e0e0', borderRadius: '4px', overflow: 'hidden' }}>
+            <div
+              style={{
+                height: '100%',
+                width: `${(timeLeft / TIME_LIMIT) * 100}%`,
+                backgroundColor: (() => {
+                  const ratio = timeLeft / TIME_LIMIT;
+                  if (ratio > 0.3) return '#4caf50';
+                  return '#f44336';
+                })(),
+                transition: 'width 0.1s linear, background-color 0.3s ease'
+              }}
+            />
           </div>
+        </div>
+          
+        {/* 問題インジケーター */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {Problems.map((problem, index) => {
+            // レベルに応じた色を決定
+            const getColorByLevel = (level: number, isCurrent: boolean) => {
+              const colors: Record<number, { light: string; dark: string }> = {
+                1: { light: '#a5d6a7', dark: '#4caf50' }, // 緑（易しい）
+                2: { light: '#90caf9', dark: '#2196f3' }, // 青（普通）
+                3: { light: '#ffcc80', dark: '#ff9800' }, // オレンジ（難しい）
+              };
+              const colorSet = colors[level] || colors[1];
+              return isCurrent ? colorSet.dark : colorSet.light;
+            };
+
+            const isCurrent = index === problemId;
+            const backgroundColor = getColorByLevel(problem.level, isCurrent);
+
+            return (
+              <div
+                key={index}
+                style={{
+                  width: '20px',
+                  height:'20px',
+                  backgroundColor,
+                  border: isCurrent ? '1px solid #333' : '1px solid #999',
+                  borderRadius: '3px',
+                  transition: 'all 0.3s ease',
+                  opacity: isCurrent ? 1 : 0.6,
+                  boxShadow: isCurrent ? '0 2px 4px rgba(0,0,0,0.2)' : 'none'
+                }}
+                title={`Problem ${index + 1} (Level ${problem.level})`}
+              />
+            );
+          })}
         </div>
 
         {/* 目標表示エリア */}
@@ -272,48 +395,48 @@ export default function QUIZPAGE() {
             />
         </div>
 
-      {/* 入力エリア */}
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>LaTeXコードを入力:</label>
-        <div style={{ position: 'relative' }}>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => handleInput(e.target.value)}
-            ref={inputRef}
-            onCopy={(e) => e.preventDefault()}
-            onPaste={(e) => e.preventDefault()}
-            onContextMenu={(e) => e.preventDefault()}
-            onKeyDown={handleKeyDownEnter}
-            style={{
-              width: '100%',
-              padding: '15px',
-              paddingRight: '15px',
-              fontSize: '18px',
-              borderRadius: '5px',
-              border: isCorrect 
-                ? '2px solid #4caf50' 
-                : isShaking 
-                  ? '2px solid red' 
-                  : '2px solid #ccc',
-              animation: isShaking ? 'shake 0.5s' : 'none',
-              outline: 'none',
-              fontFamily: 'monospace',
-              backgroundColor: isCorrect ? '#f1f8f4' : 'white'
-            }}
-            autoFocus
+        {/* 入力エリア */}
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>LaTeXコードを入力:</label>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => handleInput(e.target.value)}
+              ref={inputRef}
+              onCopy={(e) => e.preventDefault()}
+              onPaste={(e) => e.preventDefault()}
+              onContextMenu={(e) => e.preventDefault()}
+              onKeyDown={handleKeyDownEnter}
+              style={{
+                width: '100%',
+                padding: '15px',
+                paddingRight: '15px',
+                fontSize: '18px',
+                borderRadius: '5px',
+                border: isCorrect 
+                  ? '2px solid #4caf50' 
+                  : isShaking 
+                    ? '2px solid red' 
+                    : '2px solid #ccc',
+                animation: isShaking ? 'shake 0.5s' : 'none',
+                outline: 'none',
+                fontFamily: 'monospace',
+                backgroundColor: isCorrect ? '#f1f8f4' : 'white'
+              }}
+              autoFocus
+            />
+          </div>
+        </div>
+
+        {/* リアルタイムプレビュー */}
+        <div style={{ background: '#f9f9f9', padding: '30px', borderRadius: '10px', minHeight: '80px', textAlign: 'center', marginBottom: '20px' }}>
+          <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px'}}>prev your Answer</div>
+          <div
+            style={{ fontSize: '2.5em', minHeight: '70px' }}
+            dangerouslySetInnerHTML={renderMath(prevAnser)}
           />
         </div>
-      </div>
-
-      {/* リアルタイムプレビュー */}
-      <div style={{ background: '#f9f9f9', padding: '30px', borderRadius: '10px', minHeight: '80px', textAlign: 'center', marginBottom: '20px' }}>
-        <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px'}}>prev your Answer</div>
-        <div
-          style={{ fontSize: '2.5em', minHeight: '70px' }}
-          dangerouslySetInnerHTML={renderMath(prevAnser)}
-        />
-      </div>
       </main>
     </div>
   );
