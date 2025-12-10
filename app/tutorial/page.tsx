@@ -4,6 +4,7 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { convertLatexToMathMl } from 'mathlive';
 import DOMPurify from 'dompurify';
+import Link from 'next/link';
 
 // チュートリアルデータ
 const TUTORIALS = [
@@ -466,7 +467,34 @@ export default function TUTORIALHOME() {
         {/* ヘッダー部分 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
           <h1 style={{ margin: 0, fontSize: '24px' }}>LaTeX Tutorial</h1>
-          <div style={{ color: '#666', fontSize: '16px' }}>Section {sectionId + 1} / {TUTORIALS.length}</div>
+          <div style={{ color: '#666', fontSize: '16px',paddingTop:'10px'}}>Section {sectionId + 1} / {TUTORIALS.length}</div>
+          <Link 
+            href="/" 
+            style={{ 
+              textDecoration: 'none',
+              color: 'inherit'
+            }}
+          >
+            <div style={{
+              border: '1px solid #999',
+              padding: '10px 20px',
+              transition: 'background-color 0.2s',
+              cursor: 'pointer',
+              backgroundColor: '#fff',
+              textAlign: 'center'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+            >
+              <p style={{ 
+                fontSize: '16px', 
+                margin: 0,
+                color: '#666'
+              }}>
+                ホームに戻る
+              </p>
+            </div>
+          </Link>
         </div>
 
         {/* 説明エリア */}
