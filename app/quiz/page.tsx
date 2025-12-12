@@ -10,34 +10,10 @@ type Problem = {
   level: number;
   answer: string;
   keyword: string[];
+  time_limit: number;
 };
 
-//問題データ　後にデータベース作成する
-const Problems:Problem[] = [
-  {
-    level: 4, 
-    answer: '\\overrightarrow{OA}', 
-    keyword: ["OA"]
-  },
-  {
-    level: 1, 
-    answer: 'Answer = 2x + 5y - 10z',
-    keyword: ["Answer","x","y","z"]
-  },
-  { 
-    level: 2, 
-    answer: 'a_n = x^n',
-    keyword: []
-  },
-  { 
-    level: 3, 
-    answer: 'x^p_n', 
-    keyword: ["p"]
-  },
-];
-
 const MAXTEXTSIZE:number = 70;
-const TIME_LIMIT:number = 10; // 制限時間（秒）
 
 export default function QUIZPAGE() {
   const router = useRouter();
@@ -48,13 +24,51 @@ export default function QUIZPAGE() {
   const [isShaking, setIsShaking] = useState<boolean>(false); // 震えるアニメーション用
   const [showCircle, setShowCircle] = useState<boolean>(false); // 正解時の丸表示用
   const [showTimeUp, setShowTimeUp] = useState<boolean>(false); // 時間切れ表示用
-  const [timeLeft, setTimeLeft] = useState<number>(TIME_LIMIT); // 残り時間
+  const [timeLeft, setTimeLeft] = useState<number>(100); // 残り時間
   const [correctCount, setCorrectCount] = useState<number>(0); // 正解数
   const [wrongCount, setWrongCount] = useState<number>(0); // 不正解数
+  const [problems, setProblems] = useState<Problem[]>([]); // APIから取得した問題データ
+  const [isLoading, setIsLoading] = useState<boolean>(true); // ローディング状態
+  const [error, setError] = useState<string | null>(null); // エラー状態
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const currentProblem = Problems[problemId];
+  // データベースから問題を取得
+  useEffect(() => {
+    const fetchProblems = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/quiz');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch problems');
+        }
+        
+        const data = await response.json();
+        
+        console.log('Received data:', data);
+        
+        if (data.problems && data.problems.length > 0) {
+          setProblems(data.problems);
+          setTimeLeft(data.problems[0].time_limit); // 取得したデータから設定
+          setError(null);
+        } else {
+          const errorMsg = data.warning || data.error || '問題データが空です';
+          console.error('No problems available:', errorMsg);
+          throw new Error(errorMsg);
+        }
+      } catch (err) {
+        console.error('Error fetching problems:', err);
+        setError('問題の取得に失敗しました');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProblems();
+  }, []);
+
+  const currentProblem = problems[problemId];
 
   // 震えるアニメーションをトリガーする関数
   const triggerShake = () => {
@@ -66,13 +80,13 @@ export default function QUIZPAGE() {
     setPrevAnswer("");
     setInput("");
     setIsCorrect(false);
-    setTimeLeft(TIME_LIMIT); // タイマーをリセット
-  }, [problemId]);
+    setTimeLeft(problems[problemId + 1].time_limit); // タイマーをリセット
+  }, [problemId,problems]);
 
   // タイマーのカウントダウン
   useEffect(() => {
-    if (timeLeft <= 0 || isCorrect || showCircle || showTimeUp) {
-      return; // 時間切れ、正解済み、または円表示中は停止
+    if (isLoading || timeLeft <= 0 || isCorrect || showCircle || showTimeUp) {
+      return; // ローディング中、時間切れ、正解済み、または円表示中は停止
     }
 
     const timer = setInterval(() => {
@@ -85,7 +99,7 @@ export default function QUIZPAGE() {
     }, 100);
 
     return () => clearInterval(timer);
-  }, [timeLeft, isCorrect, showCircle, showTimeUp]);
+  }, [isLoading, timeLeft, isCorrect, showCircle, showTimeUp]);
 
   // 時間切れの処理
   useEffect(() => {
@@ -125,7 +139,7 @@ export default function QUIZPAGE() {
       const timer = setTimeout(() => {
         setShowCircle(false);
         // 円の表示が終わったら次の問題に遷移
-        if (problemId < Problems.length - 1) {
+        if (problemId < problems.length - 1) {
           handleProblem();
         } else {
           // 最終問題の場合は結果ページへ
@@ -135,7 +149,7 @@ export default function QUIZPAGE() {
 
       return () => clearTimeout(timer);
     }
-  }, [showCircle, problemId, handleProblem, router, correctCount, wrongCount]);
+  }, [showCircle, problemId, handleProblem, router, correctCount, wrongCount, problems.length]);
 
   
 
@@ -240,10 +254,89 @@ export default function QUIZPAGE() {
   }
 
   useEffect(() => {
-    if (inputRef.current) {
+    if (inputRef.current && !isLoading) {
       inputRef.current.focus();
     }
-  }, [problemId]);
+  }, [problemId, isLoading]);
+
+  // ローディング画面
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        flexDirection: 'column',
+        gap: '20px'
+      }}>
+        <div style={{ fontSize: '24px', color: '#333' }}>Loading...</div>
+        <div style={{ fontSize: '16px', color: '#666' }}>問題を読み込んでいます</div>
+      </div>
+    );
+  }
+
+  // エラー画面
+  if (error) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        flexDirection: 'column',
+        gap: '20px'
+      }}>
+        <div style={{ fontSize: '24px', color: '#f44336' }}>エラー</div>
+        <div style={{ fontSize: '16px', color: '#666' }}>{error}</div>
+        <button
+          onClick={() => router.push('/')}
+          style={{
+            padding: '10px 30px',
+            fontSize: '16px',
+            border: '2px solid #333',
+            backgroundColor: '#fff',
+            cursor: 'pointer',
+            fontFamily: 'Georgia, "Times New Roman", serif'
+          }}
+        >
+          ホームに戻る
+        </button>
+      </div>
+    );
+  }
+
+  // 問題が取得できていない場合
+  if (!problems || problems.length === 0) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        flexDirection: 'column',
+        gap: '20px'
+      }}>
+        <div style={{ fontSize: '24px', color: '#666' }}>問題がありません</div>
+        <button
+          onClick={() => router.push('/')}
+          style={{
+            padding: '10px 30px',
+            fontSize: '16px',
+            border: '2px solid #333',
+            backgroundColor: '#fff',
+            cursor: 'pointer',
+            fontFamily: 'Georgia, "Times New Roman", serif'
+          }}
+        >
+          ホームに戻る
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', position: 'relative' }}>
@@ -329,7 +422,7 @@ export default function QUIZPAGE() {
         <div style={{ marginBottom: '20px', borderBottom: '2px solid #eee', paddingBottom: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
             <h1 style={{ margin: 0, fontSize: '24px' }}>LaTeX QUIZ</h1>
-            <div style={{ color: '#666', fontSize: '16px' }}>Problem {problemId + 1} / {Problems.length}</div>
+            <div style={{ color: '#666', fontSize: '16px' }}>Problem {problemId + 1} / {problems.length}</div>
           </div>
 
           {/* タイムリミットのプログレスバー */}
@@ -337,9 +430,9 @@ export default function QUIZPAGE() {
             <div
               style={{
                 height: '100%',
-                width: `${(timeLeft / TIME_LIMIT) * 100}%`,
+                width: `${(timeLeft / problems[problemId].time_limit) * 100}%`,
                 backgroundColor: (() => {
-                  const ratio = timeLeft / TIME_LIMIT;
+                  const ratio = timeLeft / problems[problemId].time_limit;
                   if (ratio > 0.3) return '#4caf50';
                   return '#f44336';
                 })(),
@@ -351,7 +444,7 @@ export default function QUIZPAGE() {
           
         {/* 問題インジケーター */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          {Problems.map((problem, index) => {
+          {problems.map((problem, index) => {
             // レベルに応じた色を決定
             const getColorByLevel = (level: number, isCurrent: boolean) => {
               const colors: Record<number, { light: string; dark: string }> = {
