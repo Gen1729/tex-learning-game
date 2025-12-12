@@ -38,15 +38,13 @@ export default function QUIZPAGE() {
     const fetchProblems = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/quiz');
+        const response = await fetch(`/api/quiz?minlevel=1&maxlevel=4`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch problems');
         }
         
         const data = await response.json();
-        
-        console.log('Received data:', data);
         
         if (data.problems && data.problems.length > 0) {
           setProblems(data.problems);
@@ -448,9 +446,10 @@ export default function QUIZPAGE() {
             // レベルに応じた色を決定
             const getColorByLevel = (level: number, isCurrent: boolean) => {
               const colors: Record<number, { light: string; dark: string }> = {
-                1: { light: '#a5d6a7', dark: '#4caf50' }, // 緑（易しい）
-                2: { light: '#90caf9', dark: '#2196f3' }, // 青（普通）
-                3: { light: '#ffcc80', dark: '#ff9800' }, // オレンジ（難しい）
+                1: { light: '#a5d6a7', dark: '#4caf50' },
+                2: { light: '#90caf9', dark: '#2196f3' },
+                3: { light: '#ffcc80', dark: '#ff9800' },
+                4: { light: '#f99a9a', dark: '#ff0000' },
               };
               const colorSet = colors[level] || colors[1];
               return isCurrent ? colorSet.dark : colorSet.light;

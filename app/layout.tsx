@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TeX Racer",
+  title: "TeX Learning",
   description: "Learn LaTeX by typing math expressions",
 };
 
