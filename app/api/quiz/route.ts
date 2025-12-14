@@ -80,8 +80,10 @@ export async function GET(request: Request) {
 
       completedProblems = [...completedProblems, ...problems];
     }
+
+    console.log(completedProblems);
     
-    return NextResponse.json({ completedProblems }, { status: 200 });
+    return NextResponse.json({ problems: completedProblems }, { status: 200 });
   } catch (error) {
     console.error('Error fetching problems:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
