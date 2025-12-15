@@ -10,6 +10,17 @@ type Problem = {
 };
 
 export async function GET(request: Request) {
+  // 環境変数チェック
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return NextResponse.json(
+      { 
+        error: 'Supabase環境変数が設定されていません',
+        details: 'NEXT_PUBLIC_SUPABASE_URLとNEXT_PUBLIC_SUPABASE_ANON_KEYを設定してください'
+      },
+      { status: 500 }
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const minLevel = parseInt(searchParams.get('minlevel') || '1');
   const maxLevel = parseInt(searchParams.get('maxlevel') || '4');
