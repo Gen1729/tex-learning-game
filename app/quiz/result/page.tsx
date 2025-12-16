@@ -65,28 +65,26 @@ function ResultContent() {
           {/* 正解数（中央に大きく） */}
           <div style={{ marginBottom: '40px' }}>
             <div style={{ 
-              fontSize: '20px', 
-              color: '#000',
-              marginBottom: '15px',
-              letterSpacing: '2px'
-            }}>
-              正解数
-            </div>
-            <div style={{ 
               fontSize: '120px', 
               fontWeight: 'bold',
               color: '#4caf50',
               fontFamily: 'Arial, sans-serif',
-              lineHeight: '1'
+              lineHeight: '1',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '20px'
             }}>
-              {correctCount}
+              <span>{correctCount}</span>
+              <span style={{ fontSize: '60px', color: '#666' }}>/</span>
+              <span style={{ fontSize: '80px', color: '#666' }}>{totalProblems}</span>
             </div>
             <div style={{ 
               fontSize: '18px', 
               color: '#000',
               marginTop: '10px'
             }}>
-              問
+              問正解
             </div>
           </div>
 

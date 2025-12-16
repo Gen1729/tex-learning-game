@@ -506,14 +506,17 @@ export default function QUIZPAGE() {
         </div>
 
         {showPop ? (
-          <div style={{ background: '#ffffff', border: '1px solid #000', padding: '30px', minHeight: '40px', textAlign: 'center', marginTop: '60px' }}>
-            <div style={{ fontSize: '20px', color: '#ff0000', marginBottom: '10px'}}>Answer</div>
-            <div
-              style={{ fontSize: '1.5em', minHeight: '30px' }}
-            >
-              {currentProblem.answer}
+          <div style={{textAlign: 'center'}}>
+            <div style={{ fontWeight: 'bold', fontSize: '20px', color: '#ff0000', marginBottom: '10px',marginTop: '60px' }}>Answer</div>
+            <div style={{ background: '#ffffff', border: '1px solid #000', padding: '10px', minHeight: '40px', textAlign: 'center'}}>
+              <div
+                style={{ fontSize: '1.5em', minHeight: '20px' }}
+              >
+                {currentProblem.answer}
+              </div>
             </div>
           </div>
+          
         ) : (
           <div>
             {/* 入力エリア */}
