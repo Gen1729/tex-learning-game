@@ -7,7 +7,7 @@ function ResultContent() {
   const searchParams = useSearchParams();
   const correctCount = parseInt(searchParams.get('correct') || '0');
   const wrongCount = parseInt(searchParams.get('wrong') || '0');
-  const totalProblems = correctCount + wrongCount;
+  const totalProblems = parseInt(searchParams.get('total') || '0');
 
   return (
     <div style={{ 

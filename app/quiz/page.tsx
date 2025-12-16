@@ -19,11 +19,12 @@ export default function QUIZPAGE() {
   const router = useRouter();
   const [problemId, setProblemId] = useState<number>(0); // 現在のセクション番号
   const [input, setInput] = useState<string>(''); // ユーザーの入力
-  const [prevAnser, setPrevAnswer] = useState<string>('');
+  const [prevAnswer, setPrevAnswer] = useState<string>('');
   const [isCorrect, setIsCorrect] = useState<boolean>(false); // 正解状態
   const [isShaking, setIsShaking] = useState<boolean>(false); // 震えるアニメーション用
   const [showCircle, setShowCircle] = useState<boolean>(false); // 正解時の丸表示用
   const [showTimeUp, setShowTimeUp] = useState<boolean>(false); // 時間切れ表示用
+  const [showPop,setShowPop] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(100); // 残り時間
   const [correctCount, setCorrectCount] = useState<number>(0); // 正解数
   const [wrongCount, setWrongCount] = useState<number>(0); // 不正解数
@@ -83,7 +84,7 @@ export default function QUIZPAGE() {
 
   // タイマーのカウントダウン
   useEffect(() => {
-    if (isLoading || timeLeft <= 0 || isCorrect || showCircle || showTimeUp) {
+    if (isLoading || timeLeft <= 0 || isCorrect || showCircle || showTimeUp || showPop) {
       return; // ローディング中、時間切れ、正解済み、または円表示中は停止
     }
 
@@ -97,23 +98,23 @@ export default function QUIZPAGE() {
     }, 100);
 
     return () => clearInterval(timer);
-  }, [isLoading, timeLeft, isCorrect, showCircle, showTimeUp]);
+  }, [isLoading, timeLeft, isCorrect, showCircle, showTimeUp, showPop]);
 
   // 時間切れの処理
   useEffect(() => {
-    if (timeLeft <= 0 && !isCorrect && !showCircle && !showTimeUp) {
+    if (timeLeft <= 0 && !isCorrect && !showCircle && !showTimeUp && !showPop) {
       const timer = setTimeout(() => {
         setShowTimeUp(true);
       }, 0);
       return () => clearTimeout(timer);
     }
-  }, [timeLeft, isCorrect, showCircle, showTimeUp]);
+  }, [timeLeft, isCorrect, showCircle, showTimeUp, showPop]);
 
-  // showTimeUpがtrueになったら1秒後にfalseに戻し、次の問題へ遷移
   useEffect(() => {
     if (showTimeUp) {
       const timer = setTimeout(() => {
-        router.push(`/quiz/result?correct=${correctCount}&wrong=${wrongCount}`);
+        setShowTimeUp(false);
+        setShowPop(true);
       }, 1000);
 
       return () => clearTimeout(timer);
@@ -136,18 +137,31 @@ export default function QUIZPAGE() {
     if (showCircle) {
       const timer = setTimeout(() => {
         setShowCircle(false);
-        // 円の表示が終わったら次の問題に遷移
-        if (problemId < problems.length - 1) {
-          handleProblem();
-        } else {
-          // 最終問題の場合は結果ページへ
-          router.push(`/quiz/result?correct=${correctCount}&wrong=${wrongCount}`);
-        }
+        setShowPop(true)
       }, 1000); // 1秒間表示
 
       return () => clearTimeout(timer);
     }
   }, [showCircle, problemId, handleProblem, router, correctCount, wrongCount, problems.length]);
+
+  //問題間の答え確認タイム
+  useEffect(() => {
+    if (showPop) {
+      const timer = setTimeout(() => {
+        setShowPop(false);
+        // 円の表示が終わったら次の問題に遷移
+        if (timeLeft > 0 && problemId < problems.length - 1) {
+          handleProblem();
+        } else {
+          setIsLoading(true);
+          // TimeUpまたは最終問題の場合は結果ページへ
+          router.push(`/quiz/result?correct=${correctCount}&wrong=${wrongCount}&total=${problems.length}`);
+        }
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, timeLeft, showPop, problemId, handleProblem, router, correctCount, wrongCount, problems.length]);
 
   
 
@@ -270,7 +284,11 @@ export default function QUIZPAGE() {
         gap: '20px'
       }}>
         <div style={{ fontSize: '24px', color: '#333' }}>Loading...</div>
-        <div style={{ fontSize: '16px', color: '#666' }}>問題を読み込んでいます</div>
+        {timeLeft > 0 ? (
+          <div style={{ fontSize: '16px', color: '#666' }}>問題を読み込んでいます</div>
+        ) : (
+          <div style={{ fontSize: '16px', color: '#666' }}>成績を読み込んでいます</div>
+        )}
       </div>
     );
   }
@@ -487,48 +505,63 @@ export default function QUIZPAGE() {
             />
         </div>
 
-        {/* 入力エリア */}
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>LaTeXコードを入力:</label>
-          <div style={{ position: 'relative' }}>
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => handleInput(e.target.value)}
-              ref={inputRef}
-              onCopy={(e) => e.preventDefault()}
-              onPaste={(e) => e.preventDefault()}
-              onContextMenu={(e) => e.preventDefault()}
-              onKeyDown={handleKeyDownEnter}
-              style={{
-                width: '100%',
-                padding: '15px',
-                paddingRight: '15px',
-                fontSize: '18px',
-                borderRadius: '5px',
-                border: isCorrect 
-                  ? '2px solid #4caf50' 
-                  : isShaking 
-                    ? '2px solid red' 
-                    : '2px solid #ccc',
-                animation: isShaking ? 'shake 0.5s' : 'none',
-                outline: 'none',
-                fontFamily: 'monospace',
-                backgroundColor: isCorrect ? '#f1f8f4' : 'white'
-              }}
-              autoFocus
-            />
+        {showPop ? (
+          <div style={{ background: '#ffffff', border: '1px solid #000', padding: '30px', minHeight: '40px', textAlign: 'center', marginTop: '60px' }}>
+            <div style={{ fontSize: '20px', color: '#ff0000', marginBottom: '10px'}}>Answer</div>
+            <div
+              style={{ fontSize: '1.5em', minHeight: '30px' }}
+            >
+              {currentProblem.answer}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div>
+            {/* 入力エリア */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>LaTeXコードを入力:</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => handleInput(e.target.value)}
+                  ref={inputRef}
+                  onCopy={(e) => e.preventDefault()}
+                  onPaste={(e) => e.preventDefault()}
+                  onContextMenu={(e) => e.preventDefault()}
+                  onKeyDown={handleKeyDownEnter}
+                  style={{
+                    width: '100%',
+                    padding: '15px',
+                    paddingRight: '15px',
+                    fontSize: '18px',
+                    borderRadius: '5px',
+                    border: isCorrect 
+                      ? '2px solid #4caf50' 
+                      : isShaking 
+                        ? '2px solid red' 
+                        : '2px solid #ccc',
+                    animation: isShaking ? 'shake 0.5s' : 'none',
+                    outline: 'none',
+                    fontFamily: 'monospace',
+                    backgroundColor: isCorrect ? '#f1f8f4' : 'white'
+                  }}
+                  autoFocus
+                />
+              </div>
+            </div>
 
-        {/* リアルタイムプレビュー */}
-        <div style={{ background: '#f9f9f9', padding: '30px', borderRadius: '10px', minHeight: '80px', textAlign: 'center', marginBottom: '20px' }}>
-          <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px'}}>prev your Answer</div>
-          <div
-            style={{ fontSize: '2.5em', minHeight: '70px' }}
-            dangerouslySetInnerHTML={renderMath(prevAnser)}
-          />
-        </div>
+            {/* リアルタイムプレビュー */}
+            <div style={{ background: '#f9f9f9', padding: '30px', borderRadius: '10px', minHeight: '80px', textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px'}}>prev your Answer</div>
+              <div
+                style={{ fontSize: '2.5em', minHeight: '70px' }}
+                dangerouslySetInnerHTML={renderMath(prevAnswer)}
+              />
+            </div>
+          </div>
+        )}
+
+        
       </main>
     </div>
   );
