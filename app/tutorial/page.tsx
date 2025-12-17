@@ -304,7 +304,7 @@ const TUTORIALS = [
   },
 ];
 
-const MAXTEXTSIZE:number = 70;
+const MAXTEXTSIZE:number = 120;
 
 export default function TUTORIALHOME() {
   const [sectionId, setSectionId] = useState<number>(0); // 現在のセクション番号
@@ -522,8 +522,6 @@ export default function TUTORIALHOME() {
             value={input}
             onChange={(e) => checkAnswer(e.target.value)}
             ref={inputRef}
-            onCopy={(e) => e.preventDefault()}
-            onPaste={(e) => e.preventDefault()}
             onContextMenu={(e) => e.preventDefault()}
             style={{
               width: '100%',
