@@ -459,7 +459,7 @@ export default function QUIZPAGE() {
         </div>
           
         {/* 問題インジケーター */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', paddingBottom: '20px'}}>
           {problems.map((problem, index) => {
             // レベルに応じた色を決定
             const getColorByLevel = (level: number, isCurrent: boolean) => {
@@ -554,8 +554,8 @@ export default function QUIZPAGE() {
             </div>
 
             {/* リアルタイムプレビュー */}
-            <div style={{ background: '#f9f9f9', padding: '30px', borderRadius: '10px', minHeight: '80px', textAlign: 'center', marginBottom: '20px' }}>
-              <div style={{ fontSize: '14px', color: '#666', marginBottom: '10px'}}>prev your Answer</div>
+            <div style={{ background: '#f9f9f9', padding: '30px', borderRadius: '10px', textAlign: 'center', marginBottom: '20px',minHeight: '160px'}}>
+              <div style={{ color: '#666', marginBottom: '10px', fontSize: '14px'}}>prev your Answer</div>
               <div
                 style={{ fontSize: '2.5em', minHeight: '70px' }}
                 dangerouslySetInnerHTML={renderMath(prevAnswer)}
