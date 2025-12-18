@@ -9,7 +9,7 @@ import DOMPurify from 'dompurify';
 type Problem = {
   level: number;
   answer: string;
-  keyword: string[];
+  keyword: Record<string, number>;
   time_limit: number;
 };
 
@@ -209,8 +209,10 @@ export default function QUIZPAGE() {
       // 判定ロジック（MathMLの比較 + 正規化後の文字列長チェック）
       // 空の中括弧などを防ぐため、正規化後の長さも確認
       if (userMathML === correctMathML) {
-        for (const k of currentProblem.keyword){
-          if (!userInput.includes(k)){
+        // keywordのチェック（キーワードと出現回数の検証）
+        for (const [keyword, requiredCount] of Object.entries(currentProblem.keyword)){
+          const actualCount = (userInput.match(new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+          if (actualCount < requiredCount){
             setIsCorrect(false);
             setPrevAnswer(input);
             setWrongCount(wrongCount + 1); // 不正解カウント増加

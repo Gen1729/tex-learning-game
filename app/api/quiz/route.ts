@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 type Problem = {
   level: number;
   answer: string;
-  keyword: string[];
+  keyword: Record<string, number>;
   time_limit: number;
 };
 
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
       let problems: Problem[] = data.map((row) => ({
         level: row.level,
         answer: row.answer,
-        keyword: row.keyword ? row.keyword.split(" ").filter((k: string) => k.trim() !== "") : [],
+        keyword: row.keyword || {},
         time_limit: row.time_limit,
       }));
 
