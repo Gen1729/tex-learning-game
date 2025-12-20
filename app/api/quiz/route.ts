@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const minLevel = parseInt(searchParams.get('minlevel') || '1');
-  const maxLevel = parseInt(searchParams.get('maxlevel') || '4');
+  const maxLevel = parseInt(searchParams.get('maxlevel') || '5');
   try {
 
     let completedProblems:Problem[] = [];
@@ -69,12 +69,30 @@ export async function GET(request: Request) {
         );
       }
 
-      if (i != maxLevel && data.length < 3){
-        console.error('Data need more');
-        return NextResponse.json(
-          { error: 'データが少なすぎます' },
-          { status: 500 }
-        );
+      if (i == minLevel){
+        if (data.length < 3){
+          console.error('Data need more');
+          return NextResponse.json(
+            { error: 'データが少なすぎます' },
+            { status: 500 }
+          );
+        }
+      }else if (i == maxLevel){
+        if (data.length < 1){
+          console.error('Data need more');
+          return NextResponse.json(
+            { error: 'データが少なすぎます' },
+            { status: 500 }
+          );
+        }
+      }else{
+        if (data.length < 2){
+          console.error('Data need more');
+          return NextResponse.json(
+            { error: 'データが少なすぎます' },
+            { status: 500 }
+          );
+        }
       }
 
       // データ型を変換（必要に応じて）
@@ -86,7 +104,8 @@ export async function GET(request: Request) {
       }));
 
       problems.sort((a, b) => 0.5 - Math.random());
-      if (i != maxLevel)problems = problems.slice(0,3);
+      if (i == minLevel)problems = problems.slice(0,3);
+      else if (i != maxLevel)problems = problems.slice(0,2);
       else problems = problems.slice(0,1);
 
       completedProblems = [...completedProblems, ...problems];

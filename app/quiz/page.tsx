@@ -1,6 +1,6 @@
 "use client"
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { convertLatexToMathMl } from 'mathlive';
@@ -17,6 +17,7 @@ const MAXTEXTSIZE:number = 120;
 
 export default function QUIZPAGE() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [problemId, setProblemId] = useState<number>(0); // 現在のセクション番号
   const [input, setInput] = useState<string>(''); // ユーザーの入力
   const [prevAnswer, setPrevAnswer] = useState<string>('');
@@ -34,12 +35,16 @@ export default function QUIZPAGE() {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // URLパラメータから設定を取得
+  const selectedLevel = parseInt(searchParams.get('level') || '1');
+  const timeMultiplier = parseFloat(searchParams.get('time') || '1');
+
   // データベースから問題を取得
   useEffect(() => {
     const fetchProblems = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/quiz?minlevel=1&maxlevel=4`);
+        const response = await fetch(`/api/quiz?minlevel=${selectedLevel}&maxlevel=${selectedLevel + 4}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch problems');
@@ -49,7 +54,8 @@ export default function QUIZPAGE() {
         
         if (data.problems && data.problems.length > 0) {
           setProblems(data.problems);
-          setTimeLeft(data.problems[0].time_limit); // 取得したデータから設定
+          // 時間制限を倍率で調整
+          setTimeLeft(Math.floor(data.problems[0].time_limit * timeMultiplier));
           setError(null);
         } else {
           const errorMsg = data.warning || data.error || '問題データが空です';
@@ -65,7 +71,7 @@ export default function QUIZPAGE() {
     };
 
     fetchProblems();
-  }, []);
+  }, [selectedLevel, timeMultiplier]);
 
   const currentProblem = problems[problemId];
 
@@ -79,8 +85,9 @@ export default function QUIZPAGE() {
     setPrevAnswer("");
     setInput("");
     setIsCorrect(false);
-    setTimeLeft(problems[problemId + 1].time_limit); // タイマーをリセット
-  }, [problemId,problems]);
+    // タイマーを時間倍率を適用してリセット
+    setTimeLeft(Math.floor(problems[problemId + 1].time_limit * timeMultiplier));
+  }, [problemId, problems, timeMultiplier]);
 
   // タイマーのカウントダウン
   useEffect(() => {
@@ -448,9 +455,9 @@ export default function QUIZPAGE() {
             <div
               style={{
                 height: '100%',
-                width: `${(timeLeft / problems[problemId].time_limit) * 100}%`,
+                width: `${(timeLeft / (problems[problemId].time_limit * timeMultiplier)) * 100}%`,
                 backgroundColor: (() => {
-                  const ratio = timeLeft / problems[problemId].time_limit;
+                  const ratio = timeLeft / (problems[problemId].time_limit * timeMultiplier);
                   if (ratio > 0.3) return '#4caf50';
                   return '#f44336';
                 })(),
@@ -465,12 +472,16 @@ export default function QUIZPAGE() {
           {problems.map((problem, index) => {
             // レベルに応じた色を決定
             const getColorByLevel = (level: number, isCurrent: boolean) => {
-              const colors: Record<number, { light: string; dark: string }> = {
-                1: { light: '#a5d6a7', dark: '#4caf50' },
-                2: { light: '#90caf9', dark: '#2196f3' },
-                3: { light: '#ffcc80', dark: '#ff9800' },
-                4: { light: '#f99a9a', dark: '#ff0000' },
-              };
+                const colors: Record<number, { light: string; dark: string }> = {
+                  1: { light: '#b8b8b8', dark: '#606060' },
+                  2: { light: '#d4b89a', dark: '#603000' },
+                  3: { light: '#a0d4a0', dark: '#006000' },
+                  4: { light: '#a0d8d8', dark: '#009090' },
+                  5: { light: '#a0a0e8', dark: '#0000d0' },
+                  6: { light: '#d8d8a0', dark: '#909000' },
+                  7: { light: '#ffb890', dark: '#d06000' },
+                  8: { light: '#ffa0a0', dark: '#d00000' },
+                };
               const colorSet = colors[level] || colors[1];
               return isCurrent ? colorSet.dark : colorSet.light;
             };

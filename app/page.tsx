@@ -100,7 +100,7 @@ export default function Home() {
 
           {/* クイズ*/}
           <Link 
-            href="/quiz" 
+            href="/quiz/select" 
             style={{ 
               textDecoration: 'none',
               color: 'inherit'
