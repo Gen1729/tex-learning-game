@@ -1,5 +1,5 @@
 "use client"
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
@@ -15,7 +15,7 @@ type Problem = {
 
 const MAXTEXTSIZE:number = 120;
 
-export default function QUIZPAGE() {
+function QuizContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [problemId, setProblemId] = useState<number>(0); // 現在のセクション番号
@@ -580,5 +580,25 @@ export default function QUIZPAGE() {
         
       </main>
     </div>
+  );
+}
+
+export default function QUIZPAGE() {
+  return (
+    <Suspense fallback={
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontFamily: 'Georgia, "Times New Roman", serif',
+        fontSize: '20px',
+        color: '#666'
+      }}>
+        Loading...
+      </div>
+    }>
+      <QuizContent />
+    </Suspense>
   );
 }
