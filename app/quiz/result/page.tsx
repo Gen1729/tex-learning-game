@@ -151,7 +151,7 @@ function ResultContent() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* もう一度クイズに挑戦 */}
           <Link 
-            href="/quiz" 
+            href="/quiz/select" 
             style={{ 
               textDecoration: 'none',
               color: 'inherit'
