@@ -9,6 +9,17 @@ type Problem = {
   time_limit: number;
 };
 
+function shuffle<T>(array: T[]) {
+  const out = Array.from(array);
+  for (let i = out.length - 1; i > 0; i--) {
+    const r = Math.floor(Math.random() * (i + 1));
+    const tmp = out[i];
+    out[i] = out[r];
+    out[r] = tmp;
+  }
+  return out;
+}
+
 export async function GET(request: Request) {
   // 環境変数チェック
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
@@ -31,11 +42,8 @@ export async function GET(request: Request) {
     for (let i:number = minLevel;i <= maxLevel;i++){
       // Supabaseから問題を取得
       const { data, error } = await supabase
-        .from('problems')
+        .from(`problems_level${i}`)
         .select('*')
-        .eq('level', i)
-        // .limit(10)     // 必要に応じて件数制限
-        .order('level', { ascending: true }) // 並び替え
 
       if (error) {
         console.error('Supabase error:', error);
@@ -97,13 +105,13 @@ export async function GET(request: Request) {
 
       // データ型を変換（必要に応じて）
       let problems: Problem[] = data.map((row) => ({
-        level: row.level,
+        level: i,
         answer: row.answer,
         keyword: row.keyword || {},
         time_limit: row.time_limit,
       }));
 
-      problems.sort((a, b) => 0.5 - Math.random());
+      problems = shuffle(problems);
       if (i == minLevel)problems = problems.slice(0,3);
       else if (i != maxLevel)problems = problems.slice(0,2);
       else problems = problems.slice(0,1);
