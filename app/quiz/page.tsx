@@ -473,14 +473,14 @@ function QuizContent() {
             // レベルに応じた色を決定
             const getColorByLevel = (level: number, isCurrent: boolean) => {
                 const colors: Record<number, { light: string; dark: string }> = {
-                  1: { light: '#b8b8b8', dark: '#606060' },
-                  2: { light: '#d4b89a', dark: '#603000' },
-                  3: { light: '#a0d4a0', dark: '#006000' },
-                  4: { light: '#a0d8d8', dark: '#009090' },
-                  5: { light: '#a0a0e8', dark: '#0000d0' },
-                  6: { light: '#d8d8a0', dark: '#909000' },
-                  7: { light: '#ffb890', dark: '#d06000' },
-                  8: { light: '#ffa0a0', dark: '#d00000' },
+                  1: { light: '#b8b8b8', dark: '#808080' },
+                  2: { light: '#d4b89a', dark: '#804000' },
+                  3: { light: '#a0d4a0', dark: '#008000' },
+                  4: { light: '#a0d8d8', dark: '#00c0c0' },
+                  5: { light: '#a0a0e8', dark: '#0000ff' },
+                  6: { light: '#d8d8a0', dark: '#c0c000' },
+                  7: { light: '#ffb890', dark: '#ff8000' },
+                  8: { light: '#ffa0a0', dark: '#ff0000' },
                 };
               const colorSet = colors[level] || colors[1];
               return isCurrent ? colorSet.dark : colorSet.light;
