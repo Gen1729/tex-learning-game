@@ -137,7 +137,7 @@ function ResultContent() {
           borderBottom: '1px solid #666',
           paddingBottom: '10px'
         }}>
-          あなたの解答
+          問題の答え一覧
         </h2>
         <ol style={{
           listStyle: 'none',
