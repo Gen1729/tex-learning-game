@@ -9,6 +9,12 @@ function ResultContent() {
   const wrongCount = parseInt(searchParams.get('wrong') || '0');
   const totalProblems = parseInt(searchParams.get('total') || '0');
 
+  const prevAnswers = [];
+  for (let i:number = 0; i < 10; i++){
+    const answer: string | null = sessionStorage.getItem(`answer-${i}`);
+    if (answer !== null)prevAnswers.push(answer);
+  }
+
   return (
     <div style={{ 
       maxWidth: '800px', 
@@ -120,6 +126,60 @@ function ResultContent() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* 解答一覧 */}
+      <section style={{ marginBottom: '50px' }}>
+        <h2 style={{ 
+          fontSize: '24px', 
+          fontWeight: 'normal',
+          marginBottom: '30px',
+          borderBottom: '1px solid #666',
+          paddingBottom: '10px'
+        }}>
+          あなたの解答
+        </h2>
+        <ol style={{
+          listStyle: 'none',
+          padding: 0,
+          margin: 0,
+          counterReset: 'item'
+        }}>
+          {prevAnswers.map((value, key) => (
+            <li key={key} style={{
+              border: '1px solid #ccc',
+              padding: '20px 25px',
+              marginBottom: '15px',
+              backgroundColor: '#fff',
+              transition: 'background-color 0.2s',
+              position: 'relative',
+              paddingLeft: '70px',
+              counterIncrement: 'item'
+            }}
+            >
+              <div style={{
+                position: 'absolute',
+                left: '25px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                color: '#999',
+                fontFamily: 'Arial, sans-serif'
+              }}>
+                {key + 1}.
+              </div>
+              <div style={{
+                fontSize: '16px',
+                fontFamily: 'monospace',
+                color: '#333',
+                wordBreak: 'break-all'
+              }}>
+                {value}
+              </div>
+            </li>
+          ))}
+        </ol>
       </section>
 
       {/* メッセージ */}

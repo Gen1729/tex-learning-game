@@ -128,7 +128,6 @@ function QuizContent() {
     }
   }, [showTimeUp, problemId, handleProblem, router, correctCount, wrongCount]);
 
-  // isShakingがtrueになったら0.5秒後にfalseに戻す
   useEffect(() => {
     if (isShaking) {
       const timer = setTimeout(() => {
@@ -139,7 +138,6 @@ function QuizContent() {
     }
   }, [isShaking]);
 
-  // showCircleがtrueになったら1秒後にfalseに戻し、次の問題へ遷移
   useEffect(() => {
     if (showCircle) {
       const timer = setTimeout(() => {
@@ -155,6 +153,7 @@ function QuizContent() {
   useEffect(() => {
     if (showPop) {
       const timer = setTimeout(() => {
+        sessionStorage.setItem(`answer-${problemId}`, problems[problemId].answer);
         setShowPop(false);
         // 円の表示が終わったら次の問題に遷移
         if (timeLeft > 0 && problemId < problems.length - 1) {
@@ -168,7 +167,7 @@ function QuizContent() {
 
       return () => clearTimeout(timer);
     }
-  }, [isLoading, timeLeft, showPop, problemId, handleProblem, router, correctCount, wrongCount, problems.length]);
+  }, [isLoading, timeLeft, showPop, problemId, handleProblem, router, correctCount, wrongCount, problems]);
 
   
 
