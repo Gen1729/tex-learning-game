@@ -280,9 +280,9 @@ const TUTORIALS = [
   },
   { 
     id: 46, 
-    answer: 'x_1, \\dots, x_n', 
-    description: '3点リーダー',
-    explanation: '下付きの3点は \\dots (または \\ldots) を使います。中央の3点は \\cdots を使います。'
+    answer: 'x_1, \\ldots, x_n', 
+    description: '3点ドット',
+    explanation: '下付きの3点は\\ldotsを使います。中央の3点は \\cdots を使います。\\dotsを使うと、場面に応じて自動でドットの種類を判定してくれます（ただし、本サイトのクイズでは正解となりません）。'
   },
   { 
     id: 47, 
