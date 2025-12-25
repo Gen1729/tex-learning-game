@@ -172,8 +172,9 @@ function QuizContent() {
   
 
   const handleInput = (userInput:string) => {
+    if(isCorrect)return;
     let copyUserInput:string = userInput;
-    if(copyUserInput.length > MAXTEXTSIZE){
+    if (copyUserInput.length > MAXTEXTSIZE){
       copyUserInput = copyUserInput.substring(0,MAXTEXTSIZE);
     }
     setInput(copyUserInput);
@@ -181,8 +182,9 @@ function QuizContent() {
 
   // 入力チェック関数
   const checkAnswer = (userInput:string) => {
+    if (isCorrect)return;
     let copyUserInput:string = userInput;
-    if(copyUserInput.length > MAXTEXTSIZE){
+    if (copyUserInput.length > MAXTEXTSIZE){
       copyUserInput = copyUserInput.substring(0,MAXTEXTSIZE);
     }
     setInput(copyUserInput);
