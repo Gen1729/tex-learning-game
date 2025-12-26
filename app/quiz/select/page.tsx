@@ -9,7 +9,7 @@ export default function QuizSelectPage() {
   const [timeMultiplier, setTimeMultiplier] = useState<number>(1); // 0.5=Short, 1=Normal, 1.5=Long
 
   const handleStart = () => {
-    // クイズページに遷移（パラメータを渡す）
+    sessionStorage.clear();
     router.push(`/quiz?level=${selectedLevel}&time=${timeMultiplier}`);
   };
 

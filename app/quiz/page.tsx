@@ -366,7 +366,7 @@ function QuizContent() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', position: 'relative' }}>
-      {/* 正解時の赤い丸のオーバーレイ */}
+      {/* 正解時のオーバーレイ */}
       {showCircle && (
         <div
           style={{
@@ -378,28 +378,30 @@ function QuizContent() {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            backgroundColor: 'rgba(0, 0, 0, 0.50)',
             zIndex: 1000,
             animation: 'fadeIn 0.2s ease, fadeOut 0.2s ease 0.8s forwards'
           }}
         >
           <div
             style={{
-              width: '200px',
-              height: '200px',
-              borderRadius: '50%',
-              backgroundColor: '#d39595ff',
+              padding: '40px 80px',
+              borderRadius: '8px',
+              backgroundColor: '#fff',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              fontSize: '100px',
-              color: 'white',
+              fontSize: '36px',
+              fontWeight: 'normal',
+              color: '#4caf50',
+              fontFamily: 'Georgia, "Times New Roman", serif',
               animation: 'fadeIn 0.2s ease, fadeOut 0.2s ease 0.8s forwards',
-              boxShadow: '0 10px 40px rgba(255, 51, 51, 0.6)',
-              border: '5px solid white'
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+              border: '2px solid #4caf50',
+              letterSpacing: '4px'
             }}
           >
-            ⭕
+            CORRECT
           </div>
         </div>
       )}
@@ -416,25 +418,27 @@ function QuizContent() {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            backgroundColor: 'rgba(0, 0, 0, 0.50)',
             zIndex: 1000,
             animation: 'fadeIn 0.2s ease, fadeOut 0.2s ease 0.8s forwards'
           }}
         >
           <div
             style={{
-              padding: '40px 60px',
-              borderRadius: '20px',
-              backgroundColor: '#f44336',
+              padding: '40px 80px',
+              borderRadius: '8px',
+              backgroundColor: '#fff',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              fontSize: '48px',
-              fontWeight: 'bold',
-              color: 'white',
+              fontSize: '36px',
+              fontWeight: 'normal',
+              color: '#f44336',
+              fontFamily: 'Georgia, "Times New Roman", serif',
               animation: 'fadeIn 0.2s ease, fadeOut 0.2s ease 0.8s forwards',
-              boxShadow: '0 10px 40px rgba(244, 67, 54, 0.6)',
-              border: '5px solid white'
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+              border: '2px solid #f44336',
+              letterSpacing: '4px'
             }}
           >
             TIME UP
