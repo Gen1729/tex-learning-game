@@ -13,7 +13,7 @@ type Problem = {
   time_limit: number;
 };
 
-const MAXTEXTSIZE:number = 150;
+const MAXTEXTSIZE:number = 200;
 
 function QuizContent() {
   const router = useRouter();

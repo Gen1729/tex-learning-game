@@ -304,7 +304,7 @@ const TUTORIALS = [
   },
 ];
 
-const MAXTEXTSIZE:number = 150;
+const MAXTEXTSIZE:number = 200;
 
 export default function TUTORIALHOME() {
   const [sectionId, setSectionId] = useState<number>(0); // 現在のセクション番号
