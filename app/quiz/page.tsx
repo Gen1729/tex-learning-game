@@ -13,7 +13,7 @@ type Problem = {
   time_limit: number;
 };
 
-const MAXTEXTSIZE:number = 120;
+const MAXTEXTSIZE:number = 150;
 
 function QuizContent() {
   const router = useRouter();
@@ -453,6 +453,33 @@ function QuizContent() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
             <h1 style={{ margin: 0, fontSize: '24px' }}>LaTeX QUIZ</h1>
             <div style={{ color: '#666', fontSize: '16px' }}>Problem {problemId + 1} / {problems.length}</div>
+            <button 
+              onClick={() => router.push('/quiz/select')}
+              style={{ 
+                textDecoration: 'none',
+                color: 'inherit'
+              }}
+            >
+              <div style={{
+                border: '1px solid #999',
+                padding: '10px 20px',
+                transition: 'background-color 0.2s',
+                cursor: 'pointer',
+                backgroundColor: '#fff',
+                textAlign: 'center'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+              >
+                <p style={{ 
+                  fontSize: '16px', 
+                  margin: 0,
+                  color: '#666'
+                }}>
+                  ホームに戻る
+                </p>
+              </div>
+            </button>
           </div>
 
           {/* タイムリミットのプログレスバー */}
