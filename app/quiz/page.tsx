@@ -476,7 +476,7 @@ function QuizContent() {
                   margin: 0,
                   color: '#666'
                 }}>
-                  ホームに戻る
+                  クイズ選択画面に戻る
                 </p>
               </div>
             </button>
