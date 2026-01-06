@@ -265,6 +265,52 @@ export default function QuizSelectPage() {
           </h2>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Extream */}
+            <div
+              onClick={() => setTimeMultiplier(0.50)}
+              style={{
+                border: timeMultiplier === 0.50 ? '3px solid #b214d9' : '1px solid #333',
+                padding: '25px 30px',
+                cursor: 'pointer',
+                backgroundColor: timeMultiplier === 0.50 ? '#ffebffff' : '#fff',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                if (timeMultiplier !== 0.50) {
+                  e.currentTarget.style.backgroundColor = '#f5f5f5';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (timeMultiplier !== 0.50) {
+                  e.currentTarget.style.backgroundColor = '#fff';
+                }
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ 
+                    fontSize: '20px', 
+                    fontWeight: 'normal',
+                    margin: '0 0 10px 0',
+                    color: timeMultiplier === 0.50 ? '#b214d9' : '#333'
+                  }}>
+                    Extream (0.50x)
+                  </h3>
+                  <p style={{ 
+                    fontSize: '15px', 
+                    color: '#555',
+                    margin: 0,
+                    lineHeight: '1.5'
+                  }}>
+                    制限時間が鬼短くなります（人外向け）
+                  </p>
+                </div>
+                {timeMultiplier === 0.50 && (
+                  <div style={{ fontSize: '30px', color: '#b214d9' }}>✓</div>
+                )}
+              </div>
+            </div>
+            
             {/* Short */}
             <div
               onClick={() => setTimeMultiplier(0.75)}
