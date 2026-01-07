@@ -3,10 +3,71 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+const colorDifficulty = {
+  easy : {
+    "border" : "#4caf50",
+    "bg" : "#f1f8f4",
+    "label" : "⭐ Easy"
+  },
+  normal : {
+    "border" : "#2196f3",
+    "bg" : "#e3f2fd",
+    "label" : "⭐⭐ Normal"
+  },
+  hard : {
+    "border" : "#ff9800",
+    "bg" : "#fff3e0",
+    "label" : "⭐⭐⭐ Hard"
+  },
+  lunatic : {
+    "border" : "#f44336",
+    "bg" : "#ffebee",
+    "label" : "⭐⭐⭐⭐ Lunatic"
+  }
+}
+
+const timeDifficulty = {
+  extream : {
+    "border" : "#b214d9",
+    "bg" : "#ffebff",
+    "label" : "Extream (0.50x)",
+    "description" : "制限時間が鬼短くなります（人外向け）",
+    "time" : 0.5
+  },
+  short : {
+    "border" : "#f44336",
+    "bg" : "#ffebee",
+    "label" : "Short (0.75x)",
+    "description" : "制限時間が短くなります（上級者向け）",
+    "time" : 0.75
+  },
+  normal : {
+    "border" : "#ff9800",
+    "bg" : "#fff3e0",
+    "label" : "Normal (1.0x)",
+    "description" : "標準的な制限時間です",
+    "time" : 1.0
+  },
+  long : {
+    "border" : "#2196f3",
+    "bg" : "#e3f2fd",
+    "label" : "Long (1.5x)",
+    "description" : "制限時間が長くなります（初心者向け）",
+    "time" : 1.5
+  },
+  longLong : {
+    "border" : "#4caf50",
+    "bg" : "#f1f8f4",
+    "label" : "LongLong (2.0x)",
+    "description" : "制限時間が大分長くなります（苦手な人向け）",
+    "time" : 2.0
+  }
+}
+
 export default function QuizSelectPage() {
   const router = useRouter();
-  const [selectedLevel, setSelectedLevel] = useState<number>(1); // 1=Easy, 2=Normal, 3=Hard
-  const [timeMultiplier, setTimeMultiplier] = useState<number>(1); // 0.5=Short, 1=Normal, 1.5=Long
+  const [selectedLevel, setSelectedLevel] = useState<number>(1);
+  const [timeMultiplier, setTimeMultiplier] = useState<number>(1);
 
   const handleStart = () => {
     sessionStorage.clear();
@@ -62,193 +123,54 @@ export default function QuizSelectPage() {
           </h2>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Easy */}
-            <div
-              onClick={() => setSelectedLevel(1)}
-              style={{
-                border: selectedLevel === 1 ? '3px solid #4caf50' : '1px solid #333',
-                padding: '25px 30px',
-                cursor: 'pointer',
-                backgroundColor: selectedLevel === 1 ? '#f1f8f4' : '#fff',
-                transition: 'all 0.2s',
-                position: 'relative'
-              }}
-              onMouseEnter={(e) => {
-                if (selectedLevel !== 1) {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedLevel !== 1) {
-                  e.currentTarget.style.backgroundColor = '#fff';
-                }
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ 
-                    fontSize: '20px', 
-                    fontWeight: 'normal',
-                    margin: '0 0 10px 0',
-                    color: selectedLevel === 1 ? '#4caf50' : '#333'
-                  }}>
-                    ⭐ Easy
-                  </h3>
-                  <p style={{ 
-                    fontSize: '15px', 
-                    color: '#555',
-                    margin: 0,
-                    lineHeight: '1.5'
-                  }}>
-                    （Level 1-5）
-                  </p>
+            {Object.values(colorDifficulty).map((diff,index) => (
+              <div
+                key={index}
+                onClick={() => setSelectedLevel(index + 1)}
+                style={{
+                  border: selectedLevel === (index + 1) ? `3px solid ${diff.border}` : '1px solid #333',
+                  padding: '25px 30px',
+                  cursor: 'pointer',
+                  backgroundColor: selectedLevel === (index + 1) ? `${diff.bg}` : '#fff',
+                  transition: 'all 0.2s',
+                  position: 'relative'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedLevel !== (index + 1)) {
+                    e.currentTarget.style.backgroundColor = '#f5f5f5';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedLevel !== (index + 1)) {
+                    e.currentTarget.style.backgroundColor = '#fff';
+                  }
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h3 style={{ 
+                      fontSize: '20px', 
+                      fontWeight: 'normal',
+                      margin: '0 0 10px 0',
+                      color: selectedLevel === (index + 1) ? `${diff.border}` : '#333'
+                    }}>
+                      {diff.label}
+                    </h3>
+                    <p style={{ 
+                      fontSize: '15px', 
+                      color: '#555',
+                      margin: 0,
+                      lineHeight: '1.5'
+                    }}>
+                      （Level {index + 1}-{index + 5}）
+                    </p>
+                  </div>
+                  {selectedLevel === (index + 1) && (
+                    <div style={{ fontSize: '30px', color: `${diff.border}` }}>✓</div>
+                  )}
                 </div>
-                {selectedLevel === 1 && (
-                  <div style={{ fontSize: '30px', color: '#4caf50' }}>✓</div>
-                )}
               </div>
-            </div>
-
-            {/* Normal */}
-            <div
-              onClick={() => setSelectedLevel(2)}
-              style={{
-                border: selectedLevel === 2 ? '3px solid #2196f3' : '1px solid #333',
-                padding: '25px 30px',
-                cursor: 'pointer',
-                backgroundColor: selectedLevel === 2 ? '#e3f2fd' : '#fff',
-                transition: 'all 0.2s',
-                position: 'relative'
-              }}
-              onMouseEnter={(e) => {
-                if (selectedLevel !== 2) {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedLevel !== 2) {
-                  e.currentTarget.style.backgroundColor = '#fff';
-                }
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ 
-                    fontSize: '20px', 
-                    fontWeight: 'normal',
-                    margin: '0 0 10px 0',
-                    color: selectedLevel === 2 ? '#2196f3' : '#333'
-                  }}>
-                    ⭐⭐ Normal
-                  </h3>
-                  <p style={{ 
-                    fontSize: '15px', 
-                    color: '#555',
-                    margin: 0,
-                    lineHeight: '1.5'
-                  }}>
-                    （Level 2-6）
-                  </p>
-                </div>
-                {selectedLevel === 2 && (
-                  <div style={{ fontSize: '30px', color: '#2196f3' }}>✓</div>
-                )}
-              </div>
-            </div>
-
-            {/* Hard */}
-            <div
-              onClick={() => setSelectedLevel(3)}
-              style={{
-                border: selectedLevel === 3 ? '3px solid #ff9800' : '1px solid #333',
-                padding: '25px 30px',
-                cursor: 'pointer',
-                backgroundColor: selectedLevel === 3 ? '#fff3e0' : '#fff',
-                transition: 'all 0.2s',
-                position: 'relative'
-              }}
-              onMouseEnter={(e) => {
-                if (selectedLevel !== 3) {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedLevel !== 3) {
-                  e.currentTarget.style.backgroundColor = '#fff';
-                }
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ 
-                    fontSize: '20px', 
-                    fontWeight: 'normal',
-                    margin: '0 0 10px 0',
-                    color: selectedLevel === 3 ? '#ff9800' : '#333'
-                  }}>
-                    ⭐⭐⭐ Hard
-                  </h3>
-                  <p style={{ 
-                    fontSize: '15px', 
-                    color: '#555',
-                    margin: 0,
-                    lineHeight: '1.5'
-                  }}>
-                    （Level 3-7）
-                  </p>
-                </div>
-                {selectedLevel === 3 && (
-                  <div style={{ fontSize: '30px', color: '#ff9800' }}>✓</div>
-                )}
-              </div>
-            </div>
-
-            {/* Lunatic */}
-            <div
-              onClick={() => setSelectedLevel(4)}
-              style={{
-                border: selectedLevel === 4 ? '3px solid #f44336' : '1px solid #333',
-                padding: '25px 30px',
-                cursor: 'pointer',
-                backgroundColor: selectedLevel === 4 ? '#ffebee' : '#fff',
-                transition: 'all 0.2s',
-                position: 'relative'
-              }}
-              onMouseEnter={(e) => {
-                if (selectedLevel !== 4) {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedLevel !== 4) {
-                  e.currentTarget.style.backgroundColor = '#fff';
-                }
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ 
-                    fontSize: '20px', 
-                    fontWeight: 'normal',
-                    margin: '0 0 10px 0',
-                    color: selectedLevel === 4 ? '#f44336' : '#333'
-                  }}>
-                    ⭐⭐⭐⭐ Lunatic
-                  </h3>
-                  <p style={{ 
-                    fontSize: '15px', 
-                    color: '#555',
-                    margin: 0,
-                    lineHeight: '1.5'
-                  }}>
-                    （Level 4-8）
-                  </p>
-                </div>
-                {selectedLevel === 4 && (
-                  <div style={{ fontSize: '30px', color: '#f44336' }}>✓</div>
-                )}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -265,189 +187,53 @@ export default function QuizSelectPage() {
           </h2>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Extream */}
-            <div
-              onClick={() => setTimeMultiplier(0.50)}
-              style={{
-                border: timeMultiplier === 0.50 ? '3px solid #b214d9' : '1px solid #333',
-                padding: '25px 30px',
-                cursor: 'pointer',
-                backgroundColor: timeMultiplier === 0.50 ? '#ffebffff' : '#fff',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                if (timeMultiplier !== 0.50) {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (timeMultiplier !== 0.50) {
-                  e.currentTarget.style.backgroundColor = '#fff';
-                }
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ 
-                    fontSize: '20px', 
-                    fontWeight: 'normal',
-                    margin: '0 0 10px 0',
-                    color: timeMultiplier === 0.50 ? '#b214d9' : '#333'
-                  }}>
-                    Extream (0.50x)
-                  </h3>
-                  <p style={{ 
-                    fontSize: '15px', 
-                    color: '#555',
-                    margin: 0,
-                    lineHeight: '1.5'
-                  }}>
-                    制限時間が鬼短くなります（人外向け）
-                  </p>
+            {Object.values(timeDifficulty).map((diff,index) => (
+              <div
+                key={index}
+                onClick={() => setTimeMultiplier(diff.time)}
+                style={{
+                  border: timeMultiplier === diff.time ? `3px solid ${diff.border}` : '1px solid #333',
+                  padding: '25px 30px',
+                  cursor: 'pointer',
+                  backgroundColor: timeMultiplier === diff.time ? `${diff.bg}` : '#fff',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (timeMultiplier !== diff.time) {
+                    e.currentTarget.style.backgroundColor = '#f5f5f5';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (timeMultiplier !== diff.time) {
+                    e.currentTarget.style.backgroundColor = '#fff';
+                  }
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h3 style={{ 
+                      fontSize: '20px', 
+                      fontWeight: 'normal',
+                      margin: '0 0 10px 0',
+                      color: timeMultiplier === diff.time ? `${diff.border}` : '#333'
+                    }}>
+                      {diff.label}
+                    </h3>
+                    <p style={{ 
+                      fontSize: '15px', 
+                      color: '#555',
+                      margin: 0,
+                      lineHeight: '1.5'
+                    }}>
+                      {diff.description}
+                    </p>
+                  </div>
+                  {timeMultiplier === diff.time && (
+                    <div style={{ fontSize: '30px', color: `${diff.border}` }}>✓</div>
+                  )}
                 </div>
-                {timeMultiplier === 0.50 && (
-                  <div style={{ fontSize: '30px', color: '#b214d9' }}>✓</div>
-                )}
               </div>
-            </div>
-            
-            {/* Short */}
-            <div
-              onClick={() => setTimeMultiplier(0.75)}
-              style={{
-                border: timeMultiplier === 0.75 ? '3px solid #f44336' : '1px solid #333',
-                padding: '25px 30px',
-                cursor: 'pointer',
-                backgroundColor: timeMultiplier === 0.75 ? '#ffebee' : '#fff',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                if (timeMultiplier !== 0.75) {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (timeMultiplier !== 0.75) {
-                  e.currentTarget.style.backgroundColor = '#fff';
-                }
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ 
-                    fontSize: '20px', 
-                    fontWeight: 'normal',
-                    margin: '0 0 10px 0',
-                    color: timeMultiplier === 0.75 ? '#f44336' : '#333'
-                  }}>
-                    Short (0.75x)
-                  </h3>
-                  <p style={{ 
-                    fontSize: '15px', 
-                    color: '#555',
-                    margin: 0,
-                    lineHeight: '1.5'
-                  }}>
-                    制限時間が短くなります（上級者向け）
-                  </p>
-                </div>
-                {timeMultiplier === 0.75 && (
-                  <div style={{ fontSize: '30px', color: '#f44336' }}>✓</div>
-                )}
-              </div>
-            </div>
-
-            {/* Normal */}
-            <div
-              onClick={() => setTimeMultiplier(1)}
-              style={{
-                border: timeMultiplier === 1 ? '3px solid #2196f3' : '1px solid #333',
-                padding: '25px 30px',
-                cursor: 'pointer',
-                backgroundColor: timeMultiplier === 1 ? '#e3f2fd' : '#fff',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                if (timeMultiplier !== 1) {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (timeMultiplier !== 1) {
-                  e.currentTarget.style.backgroundColor = '#fff';
-                }
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ 
-                    fontSize: '20px', 
-                    fontWeight: 'normal',
-                    margin: '0 0 10px 0',
-                    color: timeMultiplier === 1 ? '#2196f3' : '#333'
-                  }}>
-                    Normal (1.0x)
-                  </h3>
-                  <p style={{ 
-                    fontSize: '15px', 
-                    color: '#555',
-                    margin: 0,
-                    lineHeight: '1.5'
-                  }}>
-                    標準的な制限時間
-                  </p>
-                </div>
-                {timeMultiplier === 1 && (
-                  <div style={{ fontSize: '30px', color: '#2196f3' }}>✓</div>
-                )}
-              </div>
-            </div>
-
-            {/* Long */}
-            <div
-              onClick={() => setTimeMultiplier(1.5)}
-              style={{
-                border: timeMultiplier === 1.5 ? '3px solid #4caf50' : '1px solid #333',
-                padding: '25px 30px',
-                cursor: 'pointer',
-                backgroundColor: timeMultiplier === 1.5 ? '#f1f8f4' : '#fff',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                if (timeMultiplier !== 1.5) {
-                  e.currentTarget.style.backgroundColor = '#f5f5f5';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (timeMultiplier !== 1.5) {
-                  e.currentTarget.style.backgroundColor = '#fff';
-                }
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h3 style={{ 
-                    fontSize: '20px', 
-                    fontWeight: 'normal',
-                    margin: '0 0 10px 0',
-                    color: timeMultiplier === 1.5 ? '#4caf50' : '#333'
-                  }}>
-                    Long (1.5x)
-                  </h3>
-                  <p style={{ 
-                    fontSize: '15px', 
-                    color: '#555',
-                    margin: 0,
-                    lineHeight: '1.5'
-                  }}>
-                    制限時間が長くなります（初心者向け）
-                  </p>
-                </div>
-                {timeMultiplier === 1.5 && (
-                  <div style={{ fontSize: '30px', color: '#4caf50' }}>✓</div>
-                )}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
