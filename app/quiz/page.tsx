@@ -15,6 +15,13 @@ type Problem = {
 
 const MAXTEXTSIZE:number = 200;
 
+function fixLatexCommands(text: string): string {
+  return text
+    .replace(/\\lbrace/g, '\\{')
+    .replace(/\\rbrace/g, '\\}')
+    .replace(/\\exist(?!s)/g, '\\exists');
+}
+
 function QuizContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -211,15 +218,13 @@ function QuizContent() {
 
     // KaTeXでエラーがない場合のみMathMLで比較
     try {
-      const userMathML = convertLatexToMathMl(userInput);
+      const regexUserInput = fixLatexCommands(userInput);
+      const userMathML = convertLatexToMathMl(regexUserInput);
       const correctMathML = convertLatexToMathMl(currentProblem.answer);
 
-      // 判定ロジック（MathMLの比較 + 正規化後の文字列長チェック）
-      // 空の中括弧などを防ぐため、正規化後の長さも確認
       if (userMathML === correctMathML) {
-        // keywordのチェック（キーワードと出現回数の検証）
         for (const [keyword, requiredCount] of Object.entries(currentProblem.keyword)){
-          const actualCount = (userInput.match(new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+          const actualCount = (regexUserInput.match(new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
           if (actualCount < requiredCount){
             setIsCorrect(false);
             setPrevAnswer(input);
