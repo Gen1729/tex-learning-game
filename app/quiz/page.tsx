@@ -459,29 +459,36 @@ function QuizContent() {
             <h1 style={{ margin: 0, fontSize: '24px' }}>LaTeX QUIZ</h1>
             <div style={{ color: '#666', fontSize: '16px' }}>Problem {problemId + 1} / {problems.length}</div>
             <button 
-              onClick={() => router.push('/quiz/select')}
+              onClick={() => setTimeLeft(0)}
+              disabled={timeLeft <= 0}
               style={{ 
                 textDecoration: 'none',
-                color: 'inherit'
+                color: 'inherit',
+                opacity: timeLeft <= 0 ? 0.5 : 1,
+                cursor: timeLeft <= 0 ? 'not-allowed' : 'pointer'
               }}
             >
               <div style={{
-                border: '1px solid #999',
+                border: '2px solid #ff2424',
                 padding: '10px 20px',
                 transition: 'background-color 0.2s',
-                cursor: 'pointer',
-                backgroundColor: '#fff',
+                cursor: timeLeft <= 0 ? 'not-allowed' : 'pointer',
+                backgroundColor: '#ffc2c2',
                 textAlign: 'center'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+              onMouseEnter={(e) => {
+                if (timeLeft > 0) {
+                  e.currentTarget.style.backgroundColor = '#fe7171';
+                }
+              }}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffc2c2'}
               >
                 <p style={{ 
                   fontSize: '16px', 
                   margin: 0,
-                  color: '#666'
+                  color: '#000000'
                 }}>
-                  クイズ選択画面に戻る
+                  ギブアップする
                 </p>
               </div>
             </button>
