@@ -4,6 +4,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const colorDifficulty = {
+  chemistry : {
+    "border" : "#4ca5af",
+    "bg" : "#f1f8f8",
+    "label" : "🧪 chemistry"
+  },
   easy : {
     "border" : "#4caf50",
     "bg" : "#f1f8f4",
@@ -126,22 +131,22 @@ export default function QuizSelectPage() {
             {Object.values(colorDifficulty).map((diff,index) => (
               <div
                 key={index}
-                onClick={() => setSelectedLevel(index + 1)}
+                onClick={() => setSelectedLevel(index)}
                 style={{
-                  border: selectedLevel === (index + 1) ? `3px solid ${diff.border}` : '1px solid #333',
+                  border: selectedLevel === (index) ? `3px solid ${diff.border}` : '1px solid #333',
                   padding: '25px 30px',
                   cursor: 'pointer',
-                  backgroundColor: selectedLevel === (index + 1) ? `${diff.bg}` : '#fff',
+                  backgroundColor: selectedLevel === (index) ? `${diff.bg}` : '#fff',
                   transition: 'all 0.2s',
                   position: 'relative'
                 }}
                 onMouseEnter={(e) => {
-                  if (selectedLevel !== (index + 1)) {
+                  if (selectedLevel !== (index)) {
                     e.currentTarget.style.backgroundColor = '#f5f5f5';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (selectedLevel !== (index + 1)) {
+                  if (selectedLevel !== (index)) {
                     e.currentTarget.style.backgroundColor = '#fff';
                   }
                 }}
@@ -152,7 +157,7 @@ export default function QuizSelectPage() {
                       fontSize: '20px', 
                       fontWeight: 'normal',
                       margin: '0 0 10px 0',
-                      color: selectedLevel === (index + 1) ? `${diff.border}` : '#333'
+                      color: selectedLevel === (index) ? `${diff.border}` : '#333'
                     }}>
                       {diff.label}
                     </h3>
@@ -162,10 +167,10 @@ export default function QuizSelectPage() {
                       margin: 0,
                       lineHeight: '1.5'
                     }}>
-                      （Level {index + 1}-{index + 5}）
+                      {index == 0 ? " beta version ": `（Level ${index + 1}-${index + 5}）`}
                     </p>
                   </div>
-                  {selectedLevel === (index + 1) && (
+                  {selectedLevel === (index) && (
                     <div style={{ fontSize: '30px', color: `${diff.border}` }}>✓</div>
                   )}
                 </div>

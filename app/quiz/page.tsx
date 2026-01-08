@@ -3,6 +3,7 @@ import { useRef, useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import "katex/contrib/mhchem";
 import { convertLatexToMathMl } from 'mathlive';
 import DOMPurify from 'dompurify';
 
@@ -51,7 +52,10 @@ function QuizContent() {
     const fetchProblems = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/quiz?minlevel=${selectedLevel}&maxlevel=${selectedLevel + 4}`);
+        
+        let response;
+        if(selectedLevel == 0)response = await fetch(`/api/chemistry_quiz`);
+        else response = await fetch(`/api/quiz?minlevel=${selectedLevel}&maxlevel=${selectedLevel + 4}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch problems');

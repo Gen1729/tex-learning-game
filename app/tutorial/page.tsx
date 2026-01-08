@@ -2,6 +2,7 @@
 import { useRef, useEffect, useState } from 'react';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import "katex/contrib/mhchem";
 import { convertLatexToMathMl } from 'mathlive';
 import DOMPurify from 'dompurify';
 import Link from 'next/link';
