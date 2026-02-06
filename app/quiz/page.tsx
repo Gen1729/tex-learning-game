@@ -16,6 +16,50 @@ type Problem = {
 
 const MAXTEXTSIZE:number = 200;
 
+// 効果音を再生する関数
+const playCorrectSound = () => {
+  const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const audioContext = new AudioContextClass();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  // 正解音：明るい上昇音
+  oscillator.type = 'sine';
+  oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+  oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+  oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+  
+  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+  
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.4);
+};
+
+const playIncorrectSound = () => {
+  const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const audioContext = new AudioContextClass();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  // 不正解音：低い下降音
+  oscillator.type = 'sawtooth';
+  oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+  oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.3);
+  
+  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+  
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.3);
+};
+
 function fixLatexCommands(text: string): string {
   return text
     .replace(/\\lbrace/g, '\\{')
@@ -217,6 +261,7 @@ function QuizContent() {
       setPrevAnswer(input);
       setWrongCount(wrongCount + 1); // 不正解カウント増加
       triggerShake();
+      playIncorrectSound(); // 不正解音を再生
       return;
     }
 
@@ -234,6 +279,7 @@ function QuizContent() {
             setPrevAnswer(input);
             setWrongCount(wrongCount + 1); // 不正解カウント増加
             triggerShake();
+            playIncorrectSound(); // 不正解音を再生
             return;
           }
         }
@@ -241,11 +287,13 @@ function QuizContent() {
         setPrevAnswer(input);
         setCorrectCount(correctCount + 1); // 正解カウント増加
         setShowCircle(true); // 正解の丸を表示
+        playCorrectSound(); // 正解音を再生
       } else {
         setIsCorrect(false);
         setPrevAnswer(input);
         setWrongCount(wrongCount + 1); // 不正解カウント増加
         triggerShake();
+        playIncorrectSound(); // 不正解音を再生
       }
     } catch (error) {
       // MathML変換でエラーが発生した場合は不正解
@@ -254,6 +302,7 @@ function QuizContent() {
       setPrevAnswer(input);
       setWrongCount(wrongCount + 1); // 不正解カウント増加
       triggerShake();
+      playIncorrectSound(); // 不正解音を再生
     }
   };
 
